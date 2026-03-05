@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block page_title %}Home{% endblock %}
+{% block page_subtitle %}System overview and management{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Total Users</p>
+                    <p class="stat-value animate-num">{{ total_users }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Active Requests</p>
+                    <p class="stat-value text-danger">{{ active_requests }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Total Donations</p>
+                    <p class="stat-value animate-num">{{ total_donations }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-heart-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">This Month</p>
+                    <p class="stat-value text-success">{{ this_month }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4">Quick Actions</h5>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-people me-2"></i>Manage Users
+                </a>
+                <a href="{{ url_for('admin.view_requests') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-list-check me-2"></i>View All Requests
+                </a>
+                <a href="{{ url_for('admin.inventory') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-droplet me-2"></i>Update Blood Inventory
+                </a>
+                <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-bar-chart me-2"></i>Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4">System Status</h5>
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                <span>Background Scheduler</span>
+                <span class="badge bg-success">Running</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                <span>Database</span>
+                <span class="badge bg-success">Connected</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                <span>Email Service</span>
+                <span class="badge bg-warning">Configure SMTP</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

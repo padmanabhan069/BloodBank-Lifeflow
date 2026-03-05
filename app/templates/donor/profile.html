@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block page_subtitle %}Manage your account and health information{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+        <div class="card-custom p-4 text-center mb-4">
+            <div class="position-relative d-inline-block">
+                <div class="donor-avatar mx-auto" style="width:100px;height:100px;font-size:40px;">
+                    {{ current_user.name[:2].upper() }}
+                </div>
+                {% if profile %}
+                <span
+                    class="position-absolute bottom-0 end-0 availability-dot {{ 'available' if profile.is_available else 'unavailable' }}"
+                    style="width:20px;height:20px;"></span>
+                {% endif %}
+            </div>
+            <h4 class="mt-3 mb-1">{{ current_user.name }}</h4>
+            <p class="text-muted">{{ profile.blood_group if profile else 'No profile' }}</p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+                <span class="badge bg-primary px-3">{{ current_user.role|capitalize }}</span>
+                {% if profile %}
+                {% set status_class = 'bg-status-available' if profile.is_available else 'bg-status-unavailable' %}
+                <span class="badge px-3 {{ status_class }}">
+                    {{ 'Available' if profile.is_available else 'Unavailable' }}
+                </span>
+                {% endif %}
+            </div>
+
+            {% if profile %}
+            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mt-4">
+                <div class="text-start">
+                    <strong class="d-block">Availability</strong>
+                    <small class="text-muted">Toggle your status</small>
+                </div>
+                <div class="toggle-switch {{ 'active' if profile.is_available }}" id="availToggle"
+                    onclick="toggleAvailability()"></div>
+            </div>
+
+            <div class="row g-2 mt-3 text-center">
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ profile.total_blood_donations }}</p>
+                    <small class="text-muted">Blood</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ profile.total_platelet_donations }}</p>
+                    <small class="text-muted">Platelet</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ (profile.total_blood_donations +
+                        profile.total_platelet_donations) * 3 }}</p>
+                    <small class="text-muted">Lives</small>
+                </div>
+            </div>
+
+            <div class="mt-4 d-grid gap-2">
+                <a href="{{ url_for('donor.qr_code') }}" class="btn btn-outline-custom" target="_blank">
+                    <i class="bi bi-qr-code me-2"></i>View QR Code
+                </a>
+                <a href="{{ url_for('donor.download_report') }}" class="btn btn-outline-custom">
+                    <i class="bi bi-file-pdf me-2"></i>Download PDF Report
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="col-lg-8">
+        <div class="card-custom p-4 mb-4">
+            <h5 class="mb-4"><i class="bi bi-person me-2 text-primary"></i>Personal Information</h5>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        {{ form.name(class="form-control form-control-custom", value=current_user.name) }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control form-control-custom" value="{{ current_user.email }}"
+                            disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Phone</label>
+                        {{ form.phone(class="form-control form-control-custom") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Birth</label>
+                        {{ form.dob(class="form-control form-control-custom") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Gender</label>
+                        {{ form.gender(class="form-select form-control-custom") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Blood Group</label>
+                        <input type="text" class="form-control form-control-custom"
+                            value="{{ profile.blood_group if profile else '—' }}" disabled>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Location</label>
+                        {{ form.location(class="form-control form-control-custom") }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Weight (kg)</label>
+                        {{ form.weight(class="form-control form-control-custom", id="wt",
+                        oninput="calcBMI()") }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Height (cm)</label>
+                        {{ form.height(class="form-control form-control-custom", id="ht",
+                        oninput="calcBMI()") }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">BMI (auto)</label>
+                        <input type="text" class="form-control form-control-custom" id="bmiField"
+                            value="{{ profile.bmi if profile else '' }}" disabled>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            {{ form.platelet_willing(class="form-check-input", role="switch",
+                            id="plateletWilling") }}
+                            <label class="form-check-label" for="plateletWilling">
+                                Willing to donate platelets
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom mt-4">
+                    <i class="bi bi-check-lg me-2"></i>Save Changes
+                </button>
+            </form>
+        </div>
+
+        {% if profile %}
+        <div class="card-custom p-4">
+            <h5 class="mb-3"><i class="bi bi-calendar2-check me-2 text-primary"></i>Donation Status</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">Last Blood Donation</p>
+                    <p class="fw-semibold">{{ profile.last_blood_donation.strftime('%b %d, %Y') if
+                        profile.last_blood_donation else 'Never' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">Next Eligible (Blood)</p>
+                    <p
+                        class="fw-semibold {{ 'text-success' if profile.blood_days_until_eligible == 0 else 'text-warning' }}">
+                        {% if profile.blood_days_until_eligible == 0 %}
+                        ✅ Eligible Now
+                        {% else %}
+                        {{ profile.next_blood_eligible_date.strftime('%b %d, %Y') }} ({{
+                        profile.blood_days_until_eligible }} days)
+                        {% endif %}
+                    </p>
+                </div>
+                {% if profile.is_platelet_donor %}
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">Last Platelet Donation</p>
+                    <p class="fw-semibold">{{ profile.last_platelet_donation.strftime('%b %d, %Y') if
+                        profile.last_platelet_donation else 'Never' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">Next Eligible (Platelet)</p>
+                    <p
+                        class="fw-semibold {{ 'text-success' if profile.platelet_days_until_eligible == 0 else 'text-warning' }}">
+                        {% if profile.platelet_days_until_eligible == 0 %}✅ Eligible Now
+                        {% else %}{{ profile.next_platelet_eligible_date.strftime('%b %d, %Y') }} ({{
+                        profile.platelet_days_until_eligible }} days){% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function calcBMI() {
+        const w = parseFloat(document.getElementById('wt').value);
+        const h = parseFloat(document.getElementById('ht').value);
+        if (w && h && h > 0) {
+            const hm = h / 100;
+            document.getElementById('bmiField').value = (w / (hm * hm)).toFixed(1);
+        }
+    }
+    function toggleAvailability() {
+        fetch('{{ url_for("donor.toggle_availability") }}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+        })
+            .then(r => r.json())
+            .then(data => {
+                const t = document.getElementById('availToggle');
+                t.classList.toggle('active', data.is_available);
+                showToast('Status: ' + data.status, data.is_available ? 'success' : 'warning');
+            });
+    }
+</script>
+{% endblock %}

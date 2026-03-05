@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Request Details{% endblock %}
+{% block page_title %}Blood Request Details{% endblock %}
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom p-4 mb-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <span class="badge bg-primary fs-5 px-4 py-2">{{ req.blood_group }}</span>
+                {% if req.is_urgent %}<span class="badge bg-danger fs-6">🚨 URGENT</span>{% endif %}
+                <span class="badge {{ 'bg-success' if req.status == 'active' else 'bg-secondary' }}">{{
+                    req.status|capitalize }}</span>
+            </div>
+            <div class="row g-3">
+                {% set fields = [
+                ('Hospital', req.hospital), ('Location', req.location),
+                ('Units Required', req.units|string),
+                ('Date', req.need_date.strftime('%B %d, %Y')),
+                ('Time', req.need_time or '—'),
+                ('Contact', req.contact),
+                ('Requested By', req.requester.name)
+                ] %}
+                {% for label, val in fields %}
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">{{ label }}</p>
+                    <p class="fw-semibold mb-0">{{ val }}</p>
+                </div>
+                {% endfor %}
+                {% if req.notes %}
+                <div class="col-12">
+                    <p class="text-muted small mb-1">Notes</p>
+                    <p class="fw-semibold mb-0">{{ req.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Responders -->
+        {% if req.responses %}
+        <div class="card-custom p-4 mb-4">
+            <h5 class="mb-3"><i class="bi bi-people me-2 text-primary"></i>Donors Who Responded</h5>
+            {% for resp in req.responses %}
+            <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2">
+                <div class="donor-avatar" style="width:40px;height:40px;font-size:14px;">
+                    {{ resp.donor.name[:2].upper() }}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>{{ resp.donor.name }}</strong>
+                            <small class="text-muted d-block">{{ resp.donor.profile.blood_group if resp.donor.profile
+                                else '' }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span
+                                class="badge {{ 'bg-success' if resp.action == 'accept' else 'bg-danger' }} d-block mb-1">
+                                {{ 'Available' if resp.action == 'accept' else 'Unavailable' }}
+                            </span>
+                            {% if current_user.is_admin and resp.donor.profile %}
+                            <a href="{{ url_for('donor.view_donor', donor_id=resp.donor.profile.id) }}"
+                                class="btn btn-link btn-sm p-0 text-primary"
+                                style="font-size: 12px; text-decoration: none;">
+                                <i class="bi bi-person-vcard me-1"></i>View Profile
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        {% if current_user.role == 'user' and req.status == 'active' and current_user.id != req.user_id %}
+        <div class="card-custom p-4">
+            <h5 class="mb-3">Are you available to donate?</h5>
+
+            {% if my_response %}
+            <div class="alert {{ 'alert-success' if my_response.action == 'accept' else 'alert-secondary' }}">
+                You responded with <strong>{{ 'YES (Available)' if my_response.action == 'accept' else 'NO
+                    (Unavailable)' }}</strong>.
+            </div>
+            {% else %}
+
+            {% if current_user.profile and current_user.profile.blood_group != req.blood_group %}
+            <div class="alert alert-warning-custom mb-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Note: Your blood group is <strong>{{ current_user.profile.blood_group }}</strong>, which is different
+                from <strong>{{ req.blood_group }}</strong>.
+            </div>
+            {% endif %}
+
+            <div class="row g-2">
+                <div class="col-sm-6">
+                    <form method="POST" action="{{ url_for('requests.respond', req_id=req.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="accept">
+                        <button type="submit" class="btn btn-success w-100 py-3 shadow-sm">
+                            <i class="bi bi-check-circle me-2"></i>Yes, I'm Available
+                        </button>
+                    </form>
+                </div>
+                <div class="col-sm-6">
+                    <form method="POST" action="{{ url_for('requests.respond', req_id=req.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="decline">
+                        <button type="submit" class="btn btn-outline-danger w-100 py-3 shadow-sm">
+                            <i class="bi bi-x-circle me-2"></i>No, I'm Not
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="mt-3">
+            <a href="{{ url_for('requests.index') }}" class="btn btn-outline-custom">
+                <i class="bi bi-arrow-left me-2"></i>Back to Requests
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Rankings{% endblock %}
+{% block page_title %}Donor Rankings{% endblock %}
+{% block page_subtitle %}Top contributors in our community{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <!-- Blood Leaderboard -->
+    <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+            <h5 class="mb-4"><i class="bi bi-list-ol me-2 text-primary"></i>Blood Donation Rankings</h5>
+
+            {% if blood_leaders %}
+            <div class="ranking-list">
+                {% for p in blood_leaders %}
+                <div
+                    class="d-flex align-items-center gap-3 p-3 rounded mb-2 border-bottom {{ 'bg-light' if loop.first }}">
+                    <div class="rank-number-badge {{ 'first' if loop.first }}">
+                        {{ loop.index }}
+                    </div>
+                    <div class="donor-avatar"
+                        style="width:40px;height:40px;font-size:15px;background: var(--primary); color: white;">
+                        {{ p.user.name[:2].upper() }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ p.user.name }}
+                            {% if current_user.id == p.user_id %}<span class="badge bg-primary-light text-primary ms-1"
+                                style="font-size: 10px;">You</span>{% endif %}
+                        </h6>
+                        <small class="text-muted text-truncate d-block" style="max-width: 180px;">{{ p.blood_group }} ·
+                            {{ p.city or p.location }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-primary fs-5">{{ p.total_blood_donations }}</div>
+                        <small class="text-muted" style="font-size: 10px; text-transform: uppercase;">Donations</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-info-circle text-muted mb-2" style="font-size: 40px; opacity: 0.3;"></i>
+                <p class="text-muted">No donation records yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Platelet Leaderboard -->
+    <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+            <h5 class="mb-4"><i class="bi bi-list-ol me-2 text-info"></i>Platelet Donation Rankings</h5>
+
+            {% if platelet_leaders %}
+            <div class="ranking-list">
+                {% for p in platelet_leaders %}
+                <div
+                    class="d-flex align-items-center gap-3 p-3 rounded mb-2 border-bottom {{ 'bg-light' if loop.first }}">
+                    <div class="rank-number-badge {{ 'first' if loop.first }}"
+                        style="background: var(--info); color: white; border-color: var(--info);">
+                        {{ loop.index }}
+                    </div>
+                    <div class="donor-avatar"
+                        style="width:40px;height:40px;font-size:15px;background: var(--info); color: white;">
+                        {{ p.user.name[:2].upper() }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ p.user.name }}
+                            {% if current_user.id == p.user_id %}<span class="badge bg-info-light text-info ms-1"
+                                style="font-size: 10px;">You</span>{% endif %}
+                        </h6>
+                        <small class="text-muted text-truncate d-block" style="max-width: 180px;">{{ p.blood_group }} ·
+                            {{ p.city or p.location }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-info fs-5">{{ p.total_platelet_donations }}</div>
+                        <small class="text-muted" style="font-size: 10px; text-transform: uppercase;">Units</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-info-circle text-muted mb-2" style="font-size: 40px; opacity: 0.3;"></i>
+                <p class="text-muted">No platelet records yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .rank-number-badge {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+
+    .rank-number-badge.first {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 4px 10px rgba(196, 30, 58, 0.2);
+    }
+
+    .bg-primary-light {
+        background: rgba(196, 30, 58, 0.1);
+    }
+
+    .bg-info-light {
+        background: rgba(59, 130, 246, 0.1);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Donor Directory{% endblock %}
+{% block page_title %}Donor Directory{% endblock %}
+{% block page_subtitle %}Browse and search all registered donors{% endblock %}
+
+{% block content %}
+<div class="card-custom p-4 mb-4">
+    <form method="GET" class="row g-3">
+        <div class="col-md-3">
+            <select name="blood_group" class="form-select form-control-custom">
+                <option value="">All Blood Groups</option>
+                {% for bg in blood_groups %}
+                <option value="{{ bg }}" {{ 'selected' if request.args.get('blood_group')==bg }}>{{ bg }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="location" class="form-control form-control-custom" placeholder="City / Location"
+                value="{{ request.args.get('location','') }}">
+        </div>
+        <div class="col-md-3">
+            <select name="availability" class="form-select form-control-custom">
+                <option value="">All Status</option>
+                <option value="available" {{ 'selected' if request.args.get('availability')=='available' }}>Available
+                    Only</option>
+                <option value="unavailable" {{ 'selected' if request.args.get('availability')=='unavailable' }}>
+                    Unavailable</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary-custom w-100">
+                <i class="bi bi-funnel me-2"></i>Filter
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% for p in donors.items %}
+    <div class="col-md-6 col-lg-4 animate-fade-in">
+        <div class="donor-card">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="donor-avatar">{{ p.user.name[:2].upper() }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <h6 class="mb-0 text-truncate">{{ p.user.name }}</h6>
+                    <p class="text-muted small mb-0">{{ p.city or p.location }}</p>
+                </div>
+                <span class="badge {{ 'bg-success' if p.is_blood_eligible else 'bg-secondary' }}">
+                    {% if p.is_blood_eligible %}
+                    Available
+                    {% elif p.blood_days_until_eligible > 0 %}
+                    {{ p.blood_days_until_eligible }} days left
+                    {% else %}
+                    Unavailable
+                    {% endif %}
+                </span>
+            </div>
+            <div class="row g-2 mb-3 text-center">
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Blood</small>
+                        <strong class="text-primary">{{ p.blood_group }}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">BMI</small>
+                        <strong>{{ p.bmi or '—' }}</strong>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded">
+                        <small class="text-muted d-block">Donations</small>
+                        <strong>{{ p.total_blood_donations }}</strong>
+                    </div>
+                </div>
+            </div>
+            {% if p.blood_days_until_eligible > 0 %}
+            <p class="text-muted small mb-2">
+                <i class="bi bi-clock me-1"></i>Eligible in {{ p.blood_days_until_eligible }} days
+            </p>
+            {% endif %}
+            {% if p.is_platelet_donor %}
+            <p class="text-info small mb-2"><i class="bi bi-droplet me-1"></i>Platelet donor</p>
+            {% endif %}
+            <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}" class="btn btn-primary-custom btn-sm w-100">
+                View Profile
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-people" style="font-size:60px;color:var(--border);"></i>
+        <p class="text-muted mt-3">No donors found matching your criteria.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if donors.pages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% for p in donors.iter_pages() %}
+        {% if p %}<li class="page-item {{ 'active' if p == donors.page }}">
+            <a class="page-link" href="{{ url_for('donor.directory', page=p, **request.args) }}">{{ p }}</a>
+        </li>{% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

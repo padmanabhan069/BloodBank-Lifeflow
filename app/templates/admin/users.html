@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="card-custom p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">All Users <span class="badge bg-secondary">{{ users|length }}</span></h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Blood Group</th>
+                    <th>Role</th>
+                    <th>Donations</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="donor-avatar" style="width:36px;height:36px;font-size:13px;">{{
+                                user.name[:2].upper() }}</div>
+                            <span>{{ user.name }}</span>
+                        </div>
+                    </td>
+                    <td><small>{{ user.email }}</small></td>
+                    <td><span class="badge bg-primary">{{ user.profile.blood_group if user.profile else '—' }}</span>
+                    </td>
+                    <td><span class="badge {{ 'bg-danger' if user.role=='admin' else 'bg-secondary' }}">{{ user.role
+                            }}</span></td>
+                    <td>{{ user.profile.total_blood_donations if user.profile else 0 }}</td>
+                    <td>
+                        <span class="badge {{ 'bg-danger' if user.is_blocked else 'bg-success' }}">
+                            {{ 'Blocked' if user.is_blocked else 'Active' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if not user.is_admin %}
+                        <button
+                            class="btn btn-sm {{ 'btn-outline-success' if user.is_blocked else 'btn-outline-danger' }}"
+                            data-user-id="{{ user.id }}" onclick="handleToggleBlock(this)">
+                            {{ 'Unblock' if user.is_blocked else 'Block' }}
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    function handleToggleBlock(btn) {
+        const userId = btn.getAttribute('data-user-id');
+        toggleBlock(userId, btn);
+    }
+    function toggleBlock(userId, btn) {
+        fetch(`/admin/users/${userId}/toggle-block`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = btn.closest('tr').querySelector('td:nth-child(6) span');
+                    badge.textContent = data.is_blocked ? 'Blocked' : 'Active';
+                    badge.className = 'badge ' + (data.is_blocked ? 'bg-danger' : 'bg-success');
+                    btn.textContent = data.is_blocked ? 'Unblock' : 'Block';
+                    btn.className = 'btn btn-sm ' + (data.is_blocked ? 'btn-outline-success' : 'btn-outline-danger');
+                    showToast(`User ${data.action}`, data.is_blocked ? 'warning' : 'success');
+                }
+            });
+    }
+</script>
+{% endblock %}

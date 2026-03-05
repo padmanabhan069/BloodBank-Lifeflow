@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block content %}
+<div class="card-custom p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0">All Notifications</h5>
+        <span class="text-muted small">{{ notifications|length }} total</span>
+    </div>
+    {% if notifications %}
+    {% for n in notifications %}
+    <div class="d-flex align-items-start gap-3 p-3 {{ 'bg-light' if not n.is_read }} rounded mb-2">
+        <div
+            class="rounded-circle p-2 {{ 'bg-primary' if not n.is_read else 'bg-secondary' }} text-white flex-shrink-0">
+            <i
+                class="bi {{ 'bi-exclamation-triangle' if n.notif_type == 'request' else ('bi-bell' if n.notif_type == 'reminder' else 'bi-info-circle') }}"></i>
+        </div>
+        <div class="flex-grow-1">
+            <h6 class="mb-1">{{ n.title }}</h6>
+            <p class="text-muted small mb-1">{{ n.message }}</p>
+            <small class="text-muted">{{ n.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+            {% if n.notif_type == 'request' and n.related_id %}
+            <br><a href="{{ url_for('requests.view_request', req_id=n.related_id) }}"
+                class="btn btn-primary-custom btn-sm mt-2">View Request</a>
+            {% elif n.notif_type == 'alert' and n.related_id %}
+            <div class="mt-2 d-flex gap-2">
+                <a href="{{ url_for('requests.view_request', req_id=n.related_id) }}"
+                    class="btn btn-primary-custom btn-sm">View Request</a>
+                {% if current_user.is_admin %}
+                {# Attempt to find the donor profile ID from the message or context could be hard,
+                so the View Request page is the best hub, but we can provide a shortcut if we change the backend.
+                For now, View Request will show the 'View Profile' button for admins anyway. #}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% if not n.is_read %}<span class="badge bg-primary flex-shrink-0">New</span>{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-bell-slash" style="font-size:60px;color:var(--border);"></i>
+        <p class="text-muted mt-3">No notifications yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

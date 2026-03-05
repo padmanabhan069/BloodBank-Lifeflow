@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ d.user.name }}{% endblock %}
+{% block page_title %}Donor Profile{% endblock %}
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-custom p-4 text-center mb-4">
+            <div class="donor-avatar mx-auto mb-3" style="width:90px;height:90px;font-size:36px;">
+                {{ d.user.name[:2].upper() }}
+            </div>
+            <h4>{{ d.user.name }}</h4>
+            <p class="text-muted">{{ d.blood_group }} · {{ d.location }}</p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+                <span class="badge {{ 'bg-success' if d.is_blood_eligible else 'bg-secondary' }} px-3 py-2">
+                    {% if d.is_blood_eligible %}
+                    Available
+                    {% elif d.blood_days_until_eligible > 0 %}
+                    {{ d.blood_days_until_eligible }} days left
+                    {% else %}
+                    Unavailable
+                    {% endif %}
+                </span>
+                {% if d.is_platelet_donor %}
+                <span class="badge bg-info px-3 py-2">Platelet Donor</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-custom p-4">
+            <div class="row g-4 text-center">
+                <div class="col-4">
+                    <p class="stat-value mb-0">{{ d.total_blood_donations }}</p>
+                    <small class="text-muted">Blood Donations</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0">{{ d.total_platelet_donations }}</p>
+                    <small class="text-muted">Platelet Donations</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0">{{ d.emergency_responses }}</p>
+                    <small class="text-muted">Emergency Responses</small>
+                </div>
+            </div>
+            <hr>
+            <div class="row g-3">
+                {% set fields = [
+                ('Blood Group', d.blood_group), ('Gender', d.gender|capitalize if d.gender else '—'),
+                ('Age', d.age|string + ' years' if d.age else '—'),
+                ('BMI', d.bmi|string if d.bmi else '—'),
+                ('Location', d.location or '—'), ('Phone', d.phone or '—'),
+                ('Next Eligible', d.next_blood_eligible_date.strftime('%b %d, %Y'))
+                ] %}
+                {% for label, val in fields %}
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">{{ label }}</p>
+                    <p class="fw-semibold mb-0">{{ val }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="mt-3">
+            <a href="{{ url_for('donor.directory') }}" class="btn btn-outline-custom">
+                <i class="bi bi-arrow-left me-2"></i>Back to Directory
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

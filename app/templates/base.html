@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BloodLife{% endblock %} — Donor Management System</title>
+    <meta name="description" content="BloodLife — Smart Blood & Platelet Donor Management System">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+    <!-- Apply saved theme before paint to avoid flash -->
+    <script>
+        (function () {
+            const t = localStorage.getItem('bloodlife-theme') || 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+</head>
+
+<body data-auth="{{ 'true' if current_user.is_authenticated else 'false' }}" {% if not current_user.is_authenticated
+    %}data-auth-page="true" {% endif %}>
+    <div class="bg-pattern"></div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;" id="toastContainer"></div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Mobile Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- ═══ SIDEBAR ═══════════════════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon"><i class="bi bi-droplet-half"></i></div>
+            <div>
+                <h2>BloodLife</h2>
+                <span>Donor Management</span>
+            </div>
+        </div>
+        <nav>
+            <ul class="list-unstyled">
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+                        href="{{ url_for('main.dashboard') }}">
+                        <i class="bi bi-house-fill"></i><span>Home</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if request.blueprint == 'donor' and 'directory' in request.endpoint %}active{% endif %}"
+                        href="{{ url_for('donor.directory') }}">
+                        <i class="bi bi-people"></i><span>Donor Directory</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if request.blueprint == 'requests' %}active{% endif %}"
+                        href="{{ url_for('requests.index') }}">
+                        <i class="bi bi-exclamation-triangle"></i><span>Emergency Request</span>
+                        {% set active_count = active_request_count|default(0) %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if 'platelet' in request.endpoint|default('') %}active{% endif %}"
+                        href="{{ url_for('donor.platelet') }}">
+                        <i class="bi bi-droplet"></i><span>Platelet Donation</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if 'history' in request.endpoint|default('') %}active{% endif %}"
+                        href="{{ url_for('donor.history') }}">
+                        <i class="bi bi-clock-history"></i><span>Donation History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if 'rankings' in request.endpoint|default('') %}active{% endif %}"
+                        href="{{ url_for('donor.rankings') }}">
+                        <i class="bi bi-trophy"></i><span>Rankings</span>
+                    </a>
+                </li>
+                <li class="nav-item position-relative">
+                    <a class="nav-link-custom {% if 'notifications' in request.endpoint|default('') %}active{% endif %}"
+                        href="{{ url_for('requests.notifications') }}">
+                        <i class="bi bi-bell"></i><span>Notifications</span>
+                        {% set unread = unread|default(0) %}
+                        {% if unread > 0 %}
+                        <span class="notification-badge ms-auto" id="sidebarNotifBadge">{{ unread }}</span>
+                        {% else %}
+                        <span class="notification-badge ms-auto d-none" id="sidebarNotifBadge">0</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if 'profile' in request.endpoint|default('') %}active{% endif %}"
+                        href="{{ url_for('donor.profile') }}">
+                        <i class="bi bi-person-circle"></i><span>My Profile</span>
+                    </a>
+                </li>
+                {% if current_user.is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link-custom {% if request.blueprint == 'admin' %}active{% endif %}"
+                        href="{{ url_for('admin.index') }}">
+                        <i class="bi bi-gear"></i><span>Admin Panel</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="mt-auto pt-4" style="border-top: 1px solid rgba(255,255,255,0.1);">
+            <a class="nav-link-custom" href="{{ url_for('auth.logout') }}">
+                <i class="bi bi-box-arrow-left"></i><span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header -->
+        <div class="header mb-4">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" id="menuToggle">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div>
+                    <h5 class="mb-0">{% block page_title %}Home{% endblock %}</h5>
+                    <p class="text-muted mb-0 small">{% block page_subtitle %}{% endblock %}</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Dark / Light Mode Toggle -->
+                <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle dark/light mode">
+                    <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+                </button>
+                <!-- Notification Bell → opens slide-in drawer -->
+                <button class="btn btn-light position-relative" id="notifBellBtn" onclick="openNotifDrawer()"
+                    title="Notifications">
+                    <i class="bi bi-bell" id="bellIcon"></i>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ 'd-none' if unread|default(0) == 0 }}"
+                        id="headerNotifBadge">
+                        {{ unread|default(0) }}
+                    </span>
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-2"></i>{{ current_user.name.split()[0] }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('donor.profile') }}">
+                                <i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('donor.download_report') }}">
+                                <i class="bi bi-file-pdf me-2"></i>Download Report</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-left me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages via Toasts -->
+        <div id="flash-messages" class="d-none">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-item" data-category="{{ 'danger' if category == 'error' else category }}"
+                data-message="{{ message }}"></div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.flash-item').forEach(item => {
+                    showToast(item.dataset.message, item.dataset.category);
+                });
+            });
+        </script>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ═══ NOTIFICATION DRAWER ══════════════════════════════════════════ -->
+    <div class="notif-backdrop" id="notifBackdrop" onclick="closeNotifDrawer()"></div>
+    <aside class="notif-drawer" id="notifDrawer">
+        <div class="notif-drawer-header">
+            <div>
+                <h6 class="mb-0 fw-bold">Notifications</h6>
+                <small class="text-muted" id="notifDrawerCount">Loading...</small>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="/requests/notifications" class="btn btn-sm btn-outline-secondary" style="font-size:12px;">View
+                    All</a>
+                <button class="notif-close-btn" onclick="closeNotifDrawer()"><i class="bi bi-x-lg"></i></button>
+            </div>
+        </div>
+        <div class="notif-drawer-body" id="notifDrawerBody">
+            <div class="notif-loading" id="notifLoading">
+                <div class="spinner-border text-danger" role="status" style="width:28px;height:28px;"></div>
+                <small class="text-muted mt-2">Fetching notifications...</small>
+            </div>
+        </div>
+    </aside>
+
+    {% else %}
+    <!-- Not authenticated: auth pages (no sidebar) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index:9999;min-width:350px;">
+        {% for category, message in messages %}
+        <div
+            class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show rounded-3 shadow">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="blood-rain" id="bloodRain"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('bloodRain');
+            if (!container) return;
+            for (let i = 0; i < 40; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'drop';
+                drop.style.left = Math.random() * 100 + 'vw';
+                drop.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(drop);
+            }
+        });
+    </script>
+
+    {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('show');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+        function showToast(msg, type = 'info') {
+            const icons = { success: 'check-circle-fill', danger: 'x-circle-fill', warning: 'exclamation-triangle-fill', info: 'info-circle-fill' };
+            const colors = { success: '#10B981', danger: '#EF4444', warning: '#F59E0B', info: '#3B82F6' };
+            const toast = document.createElement('div');
+            toast.className = 'toast-custom';
+            toast.innerHTML = `<i class="bi bi-${icons[type] || icons.info}" style="color:${colors[type] || colors.info};font-size:20px;"></i>
+        <span>${msg}</span>
+        <button onclick="this.parentElement.remove()" class="btn-close ms-auto btn-close-sm"></button>`;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+        // Helper: Apply data-width to progress bars (avoids Jinja in style attribute)
+        document.querySelectorAll('[data-width]').forEach(el => {
+            el.style.width = el.getAttribute('data-width');
+        });
+
+        // ── Animated Stats Counter ───────────────────────────────────
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.animate-num').forEach(el => {
+                const endValue = parseInt(el.textContent.replace(/,/g, '')) || 0;
+                if (endValue > 0) {
+                    animateValue(el, 0, endValue, 1500);
+                }
+            });
+        });
+
+        // ── Dark / Light Mode Toggle ──────────────────────────────────
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('bloodlife-theme', theme);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'light';
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        }
+        // Sync icon on load
+        document.addEventListener('DOMContentLoaded', function () {
+            const saved = localStorage.getItem('bloodlife-theme') || 'light';
+            applyTheme(saved);
+        });
+
+        // ── Notification Drawer ──────────────────────────────────────
+        function openNotifDrawer() {
+            document.getElementById('notifDrawer').classList.add('open');
+            document.getElementById('notifBackdrop').classList.add('show');
+            document.getElementById('bellIcon').className = 'bi bi-bell-fill';
+            loadNotifications();
+        }
+        function closeNotifDrawer() {
+            document.getElementById('notifDrawer').classList.remove('open');
+            document.getElementById('notifBackdrop').classList.remove('show');
+            document.getElementById('bellIcon').className = 'bi bi-bell';
+        }
+        function loadNotifications() {
+            const body = document.getElementById('notifDrawerBody');
+            const loading = document.getElementById('notifLoading');
+            loading && (loading.style.display = 'flex');
+            fetch('/api/notifications/list')
+                .then(r => r.json())
+                .then(notifs => {
+                    // Reset badge since all are now read
+                    const badge = document.getElementById('sidebarNotifBadge');
+                    const hBadge = document.getElementById('headerNotifBadge');
+                    if (badge) { badge.textContent = 0; badge.classList.add('d-none'); }
+                    if (hBadge) { hBadge.textContent = 0; hBadge.classList.add('d-none'); }
+                    // Count
+                    const countEl = document.getElementById('notifDrawerCount');
+                    if (countEl) countEl.textContent = notifs.length + ' notification' + (notifs.length !== 1 ? 's' : '');
+                    // Render
+                    if (!notifs.length) {
+                        body.innerHTML = `<div class="notif-empty"><i class="bi bi-bell-slash"></i><p>No notifications yet</p></div>`;
+                        return;
+                    }
+                    body.innerHTML = notifs.map(n => `
+                        <div class="notif-item ${n.was_unread ? 'unread' : ''}" id="ni-${n.id}">
+                            <div class="notif-icon-wrap" style="background:${n.color}20;">
+                                <i class="bi bi-${n.icon}" style="color:${n.color};"></i>
+                            </div>
+                            <div class="notif-item-body">
+                                <div class="notif-item-title">${n.title}</div>
+                                <div class="notif-item-msg">${n.message}</div>
+                                <div class="notif-item-time">${n.time}</div>
+                                ${n.related_id && (n.type === 'request' || n.type === 'alert' || n.type === 'info') ?
+                            `<a href="/requests/${n.related_id}" class="notif-view-link" onclick="closeNotifDrawer()">View Request →</a>` : ''}
+                            </div>
+                        </div>`).join('');
+                })
+                .catch(() => {
+                    body.innerHTML = `<div class="notif-empty"><i class="bi bi-wifi-off"></i><p>Could not load</p></div>`;
+                });
+        }
+        // Close on ESC
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNotifDrawer(); });
+
+        // Poll notification count every 60s
+        if (document.body.dataset.auth === 'true') {
+            setInterval(() => {
+                fetch('/api/notifications/unread-count')
+                    .then(r => r.json())
+                    .then(data => {
+                        const badge = document.getElementById('sidebarNotifBadge');
+                        const hBadge = document.getElementById('headerNotifBadge');
+                        if (badge) { badge.textContent = data.count; badge.classList.toggle('d-none', data.count === 0); }
+                        if (hBadge) { hBadge.textContent = data.count; hBadge.classList.toggle('d-none', data.count === 0); }
+                    }).catch(() => { });
+            }, 60000);
+        }
+    </script>
+</body>
+
+</html>

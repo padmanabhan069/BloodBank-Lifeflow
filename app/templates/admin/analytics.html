@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-bar-chart me-2 text-primary"></i>Monthly Donations</h5>
+            <canvas id="donationsChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-pie-chart me-2 text-primary"></i>Blood Group Distribution</h5>
+            <canvas id="bgChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-graph-up me-2 text-primary"></i>Monthly Requests</h5>
+            <canvas id="requestsChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-trophy me-2 text-primary"></i>Top Donors</h5>
+            <canvas id="topDonorsChart" height="250"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    fetch('/admin/analytics/data')
+        .then(r => r.json())
+        .then(data => {
+            const COLORS = ['#C41E3A', '#E84560', '#FF6B6B', '#FFA07A', '#FFD093', '#A8B2FF', '#66D4CF', '#8AEDBC'];
+            new Chart(document.getElementById('donationsChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.donations.labels, datasets: [{
+                        label: 'Donations', data: data.donations.data,
+                        backgroundColor: '#C41E3A', borderRadius: 8
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+            new Chart(document.getElementById('bgChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.blood_groups.labels, datasets: [{
+                        data: data.blood_groups.data,
+                        backgroundColor: COLORS, borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'right' } } }
+            });
+            new Chart(document.getElementById('requestsChart'), {
+                type: 'line',
+                data: {
+                    labels: data.requests.labels, datasets: [{
+                        label: 'Requests', data: data.requests.data,
+                        borderColor: '#C41E3A', backgroundColor: 'rgba(196,30,58,.1)', fill: true, tension: .4, pointRadius: 5
+                    }]
+                },
+                options: { responsive: true }
+            });
+            new Chart(document.getElementById('topDonorsChart'), {
+                type: 'horizontalBar' in Chart.controllers ? 'horizontalBar' : 'bar',
+                data: {
+                    labels: data.top_donors.labels, datasets: [{
+                        label: 'Donations', data: data.top_donors.data,
+                        backgroundColor: COLORS.slice(0, 5), borderRadius: 8
+                    }]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
+            });
+        });
+</script>
+{% endblock %}

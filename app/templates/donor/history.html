@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Donation History{% endblock %}
+{% block page_title %}Donation History{% endblock %}
+{% block page_subtitle %}Your complete donation journey{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card-custom p-4 text-center mb-4">
+            <div class="donor-avatar mx-auto mb-3" style="width:80px;height:80px;font-size:32px;">
+                {{ current_user.name[:2].upper() }}
+            </div>
+            <h5>{{ current_user.name }}</h5>
+            <p class="text-muted">{{ profile.blood_group if profile else '—' }}</p>
+            <div class="row g-2 mt-3 text-center">
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ donations|length }}</p>
+                    <small class="text-muted">Total</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ donations|selectattr('donation_type','eq','blood')|list|length }}
+                    </p>
+                    <small class="text-muted">Blood</small>
+                </div>
+                <div class="col-4">
+                    <p class="stat-value mb-0 fs-4">{{ donations|length * 3 }}</p>
+                    <small class="text-muted">Lives</small>
+                </div>
+            </div>
+            {% if profile %}
+            <hr>
+            <div class="text-start">
+                <p class="small text-muted mb-1">Next Blood Eligible</p>
+                <p class="fw-semibold {{ 'text-success' if profile.blood_days_until_eligible==0 else 'text-warning' }}">
+                    {% if profile.blood_days_until_eligible == 0 %}✅ Now{% else %}{{
+                    profile.next_blood_eligible_date.strftime('%b %d, %Y') }}{% endif %}
+                </p>
+            </div>
+            {% endif %}
+            <a href="{{ url_for('donor.download_report') }}" class="btn btn-outline-custom w-100 mt-3">
+                <i class="bi bi-file-pdf me-2"></i>Download PDF Report
+            </a>
+            <a href="{{ url_for('donor.record_donation') }}" class="btn btn-primary-custom w-100 mt-2">
+                <i class="bi bi-plus-circle me-2"></i>Record New Donation
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-clock-history me-2 text-primary"></i>Donation Timeline</h5>
+            {% if donations %}
+            <div class="timeline">
+                {% for d in donations %}
+                <div class="timeline-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ 'Blood Donation' if d.donation_type == 'blood' else 'Platelet Donation'
+                                }}</h6>
+                            <p class="text-muted small mb-1">{{ d.location or 'Location not recorded' }}</p>
+                            {% if d.notes %}<p class="small mb-0">{{ d.notes }}</p>{% endif %}
+                            {% if d.is_emergency %}<span class="badge bg-danger btn-sm">Emergency Response</span>{%
+                            endif %}
+                        </div>
+                        <span class="badge {{ 'bg-primary' if d.donation_type=='blood' else 'bg-info' }}">
+                            {{ d.donation_type|capitalize }}
+                        </span>
+                    </div>
+                    <small class="text-muted mt-1 d-block">
+                        {{ d.donation_date.strftime('%B %d, %Y') }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-heart" style="font-size:60px;color:var(--border);"></i>
+                <p class="text-muted mt-3">No donation history yet.</p>
+                <a href="{{ url_for('donor.record_donation') }}" class="btn btn-primary-custom mt-2">
+                    Record Your First Donation
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

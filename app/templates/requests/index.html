@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Emergency Blood Request{% endblock %}
+{% block page_title %}Emergency Blood Request{% endblock %}
+{% block page_subtitle %}Submit urgent blood requirements{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-file-medical me-2 text-primary"></i>New Request</h5>
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Blood Group Required</label>
+                        {{ form.blood_group(class="form-select form-control-custom") }}
+                        {% for e in form.blood_group.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Units Required</label>
+                        {{ form.units(class="form-control form-control-custom", min=1, max=20) }}
+                        {% for e in form.units.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Hospital Name</label>
+                        {{ form.hospital(class="form-control form-control-custom", placeholder="City General Hospital")
+                        }}
+                        {% for e in form.hospital.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Date Needed</label>
+                        {{ form.need_date(class="form-control form-control-custom", type="date") }}
+                        {% for e in form.need_date.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Time</label>
+                        {{ form.need_time(class="form-control form-control-custom", type="time") }}
+                        {% for e in form.need_time.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Hospital Location</label>
+                        {{ form.location(class="form-control form-control-custom", placeholder="123 Main St, City") }}
+                        {% for e in form.location.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Contact Number</label>
+                        {{ form.contact(class="form-control form-control-custom", placeholder="+91-9999999999") }}
+                        {% for e in form.contact.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Additional Notes</label>
+                        {{ form.notes(class="form-control form-control-custom", rows=3,
+                        placeholder="Any specific requirements...") }}
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            {{ form.is_urgent(class="form-check-input") }}
+                            <label class="form-check-label text-danger fw-semibold" for="is_urgent">
+                                🚨 Mark as Critical Emergency
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 mt-4">
+                    <i class="bi bi-send me-2"></i>Submit Request &amp; Notify Donors
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-list-check me-2 text-primary"></i>Active Requests</h5>
+            {% for req in active_requests %}
+            <div class="card-custom p-3 mb-3 {{ 'border-danger' if req.is_urgent }}">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="badge bg-primary me-1">{{ req.blood_group }}</span>
+                        {% if req.is_urgent %}<span class="badge bg-danger">🚨 URGENT</span>{% endif %}
+                    </div>
+                    <small class="text-muted">{{ req.units }} unit(s)</small>
+                </div>
+                <h6 class="mb-1">{{ req.hospital }}</h6>
+                <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ req.location }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small><i class="bi bi-calendar me-1"></i>{{ req.need_date.strftime('%b %d') }}
+                        {% if req.need_time %}· {{ req.need_time }}{% endif %}</small>
+                    <a href="{{ url_for('requests.view_request', req_id=req.id) }}"
+                        class="btn btn-primary-custom btn-sm">View Details</a>
+                </div>
+                {% if req.accepted_count > 0 %}
+                <p class="text-success small mt-2 mb-0"><i class="bi bi-people me-1"></i>{{ req.accepted_count }}
+                    donor(s) accepted</p>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-4">No active requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

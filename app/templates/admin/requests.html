@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Admin Requests{% endblock %}
+{% block page_title %}All Blood Requests{% endblock %}
+{% block page_subtitle %}Manage, fulfill, and track all emergency blood requests{% endblock %}
+{% block content %}
+<div class="card-custom p-4">
+
+    <!-- Toolbar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <span class="badge bg-success me-1">Active: {{ requests|selectattr('status','eq','active')|list|length
+                }}</span>
+            <span class="badge bg-primary me-1">Fulfilled: {{ requests|selectattr('status','eq','fulfilled')|list|length
+                }}</span>
+            <span class="badge bg-secondary me-1">Closed: {{ requests|selectattr('status','eq','closed')|list|length
+                }}</span>
+            <span class="badge bg-warning text-dark">Expired: {{
+                requests|selectattr('status','eq','expired')|list|length }}</span>
+        </div>
+        <!-- Auto-expire button -->
+        <form method="POST" action="{{ url_for('admin.expire_requests') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-warning btn-sm"
+                onclick="return confirm('Auto-close all requests past their need date?')">
+                <i class="bi bi-clock-history me-1"></i>Auto-Expire Past Requests
+            </button>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Blood Group</th>
+                    <th>Hospital</th>
+                    <th>Need Date</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th>Responses</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>
+                        <span class="badge bg-danger fs-6">{{ req.blood_group }}</span>
+                        <small class="text-muted d-block">{{ req.units }} unit(s)</small>
+                    </td>
+                    <td>
+                        <strong>{{ req.hospital }}</strong>
+                        <small class="text-muted d-block">{{ req.location }}</small>
+                    </td>
+                    <td>
+                        <small>{{ req.need_date.strftime('%b %d, %Y') }}</small>
+                        {% if req.need_date < today and req.status=='active' %} <span
+                            class="badge bg-warning text-dark d-block mt-1" style="font-size:10px;">Overdue</span>
+                            {% endif %}
+                    </td>
+                    <td>
+                        {% if req.is_urgent %}
+                        <span class="badge bg-danger">🚨 Urgent</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Normal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if req.status == 'active' %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif req.status == 'fulfilled' %}
+                        <span class="badge bg-primary">✅ Fulfilled</span>
+                        {% elif req.status == 'expired' %}
+                        <span class="badge bg-warning text-dark">⏰ Expired</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Closed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-success">{{ req.accepted_count }} ✓</span>
+                        <span class="badge bg-danger ms-1">{{ req.responses|length - req.accepted_count }} ✗</span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            <!-- View Request -->
+                            <a href="{{ url_for('requests.view_request', req_id=req.id) }}"
+                                class="btn btn-sm btn-outline-secondary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <!-- Donor Response Panel -->
+                            {% if req.responses %}
+                            <a href="{{ url_for('admin.request_donors', req_id=req.id) }}"
+                                class="btn btn-sm btn-outline-primary" title="View Donors">
+                                <i class="bi bi-people"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if req.status == 'active' %}
+                            <!-- Mark as Fulfilled -->
+                            <form method="POST" action="{{ url_for('admin.fulfill_request', req_id=req.id) }}"
+                                class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-success" title="Mark Fulfilled"
+                                    onclick="return confirm('Mark this request as fulfilled?')">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                            </form>
+                            <!-- Close Request -->
+                            <form method="POST" action="{{ url_for('admin.close_request', req_id=req.id) }}"
+                                class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-sm btn-outline-danger" title="Close"
+                                    onclick="return confirm('Close this request?')">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

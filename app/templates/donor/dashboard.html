@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block page_title %}Home{% endblock %}
+{% block page_subtitle %}Welcome back, {{ current_user.name.split()[0] }}! Ready to save lives today.{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<div class="hero-banner mb-4 animate-fade-in" id="heroBanner">
+    <img src="{{ url_for('static', filename='home_hero.png') }}" alt="BloodLife Hero Banner" class="hero-img">
+    <div class="hero-overlay">
+        <div class="hero-content">
+            <div class="hero-badge mb-2">
+                <i class="bi bi-heart-pulse-fill me-1"></i> BloodLife
+            </div>
+            <h2 class="hero-title">Every Drop Saves a Life</h2>
+            <p class="hero-subtitle">You are part of a community of heroes. Your donation can save up to 3 lives.</p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="{{ url_for('requests.index') }}" class="btn hero-btn-primary">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Emergency Request
+                </a>
+                <a href="{{ url_for('donor.record_donation') }}" class="btn hero-btn-outline">
+                    <i class="bi bi-plus-circle me-2"></i>Record Donation
+                </a>
+            </div>
+        </div>
+        {% if profile %}
+        <div class="hero-donor-badge d-none d-md-flex">
+            <div class="blood-drop-badge">{{ profile.blood_group or '?' }}</div>
+            <div>
+                <div class="fw-bold text-white">{{ current_user.name.split()[0] }}</div>
+                <small class="text-white opacity-75">{{ profile.total_blood_donations }} donation(s)</small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats Row -->
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-1">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Total Donors</p>
+                    <p class="stat-value animate-num">{{ total_donors }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-2">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Available Now</p>
+                    <p class="stat-value text-success">{{ available_donors }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">Active Requests</p>
+                    <p class="stat-value text-danger">{{ active_requests }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <p class="text-muted mb-1 small">My Donations</p>
+                    <p class="stat-value">{{ my_donations }}</p>
+                </div>
+                <div class="stat-icon"><i class="bi bi-heart-fill"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Alert -->
+{% if profile %}
+{% if profile.blood_days_until_eligible > 0 %}
+<div class="alert alert-warning-custom mb-4">
+    <i class="bi bi-clock me-2"></i>
+    You have **{{ profile.blood_days_until_eligible }} days left** until you are eligible to donate blood again!
+    ({{ profile.next_blood_eligible_date.strftime('%B %d, %Y') }})
+</div>
+{% else %}
+<div class="alert alert-success-custom mb-4">
+    <i class="bi bi-check-circle me-2"></i>
+    You are <strong>eligible to donate blood</strong> right now! Visit your nearest blood bank.
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Search Bar -->
+<div class="card-custom p-4 mb-4 animate-fade-in stagger-3">
+    <h5 class="mb-3"><i class="bi bi-search me-2"></i>Find Donors</h5>
+    <div class="row g-3" id="searchForm">
+        <div class="col-md-4">
+            <select class="form-select form-control-custom" id="searchBG">
+                <option value="">All Blood Groups</option>
+                {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                <option value="{{ bg }}">{{ bg }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control form-control-custom" id="searchLoc" placeholder="City / Location">
+        </div>
+        <div class="col-md-2">
+            <select class="form-select form-control-custom" id="searchAvail">
+                <option value="">All Status</option>
+                <option value="available">Available</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary-custom w-100" onclick="ajaxSearch()">
+                <i class="bi bi-search me-1"></i>Search
+            </button>
+        </div>
+    </div>
+
+    <!-- AJAX Results -->
+    <div id="searchResults" class="row g-3 mt-2 d-none"></div>
+</div>
+
+<div class="row g-4">
+    <!-- Blood Group Inventory -->
+    <div class="col-lg-5 animate-fade-in stagger-4">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-droplet-half me-2 text-primary"></i>Blood Group Inventory</h5>
+            <div class="row g-3">
+                {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                <div class="col-6 col-md-3">
+                    <div class="blood-group-card">
+                        <div class="blood-type">{{ bg }}</div>
+                        <p class="text-muted small mb-1">{{ stock.get(bg,0)|int }} units</p>
+                        <p class="small mb-0"><span class="text-success fw-semibold">{{ bg_counts.get(bg,0) }}</span>
+                            donors</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Donors -->
+    <div class="col-lg-7 animate-fade-in stagger-5">
+        <div class="card-custom p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>Available Donors</h5>
+                <a href="{{ url_for('donor.directory') }}" class="btn btn-outline-custom btn-sm">View All</a>
+            </div>
+            <div class="row g-3" id="donorsList">
+                {% for p in donors %}
+                <div class="col-md-6">
+                    <div class="donor-card">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="donor-avatar">{{ p.user.name[:2].upper() }}</div>
+                            <div class="flex-grow-1 min-w-0">
+                                <h6 class="mb-1 text-truncate">{{ p.user.name }}</h6>
+                                <p class="text-muted small mb-0">
+                                    <span
+                                        class="availability-dot {{ 'available' if p.is_available else 'unavailable' }}"></span>
+                                    {{ p.blood_group }} · {{ p.city or p.location }}
+                                </p>
+                            </div>
+                            <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}"
+                                class="btn btn-sm btn-outline-custom"><i class="bi bi-eye"></i></a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No available donors right now.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <a href="{{ url_for('requests.index') }}" class="text-decoration-none">
+            <div class="card-custom p-4 text-center"
+                style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;cursor:pointer;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size:48px;"></i>
+                <h5 class="mt-3 mb-0">Request Blood (Emergency)</h5>
+                <p class="opacity-75 small mt-2 mb-0">Submit an emergency blood request to notify matching donors</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a href="{{ url_for('donor.platelet') }}" class="text-decoration-none">
+            <div class="card-custom p-4 text-center"
+                style="background:linear-gradient(135deg,var(--accent),var(--primary));color:white;cursor:pointer;">
+                <i class="bi bi-droplet-fill" style="font-size:48px;"></i>
+                <h5 class="mt-3 mb-0">Platelet Donation</h5>
+                <p class="opacity-75 small mt-2 mb-0">View platelet donors and register your willingness</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function ajaxSearch() {
+        const bg = document.getElementById('searchBG').value;
+        const loc = document.getElementById('searchLoc').value;
+        const avail = document.getElementById('searchAvail').value;
+        const btn = document.querySelector('button[onclick="ajaxSearch()"]');
+        const originalBtnContent = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Searching...';
+
+        const params = new URLSearchParams({ blood_group: bg, location: loc, availability: avail });
+        fetch('/api/donors/search?' + params)
+            .then(r => r.json())
+            .then(donors => {
+                const container = document.getElementById('searchResults');
+                container.classList.remove('d-none');
+
+                if (!donors.length) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="text-center py-4 bg-light rounded-3 border border-dashed">
+                                <i class="bi bi-person-exclamation text-muted" style="font-size: 2rem;"></i>
+                                <p class="text-muted mt-2 mb-0">No donors found matching your criteria.</p>
+                                <button class="btn btn-sm btn-link mt-1" onclick="resetSearch()">Clear Filters</button>
+                            </div>
+                        </div>`;
+                } else {
+                    const donorCards = donors.map(d => `
+                        <div class="col-md-6 col-lg-4 animate-fade-in">
+                            <div class="donor-card">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="donor-avatar">${d.name.slice(0, 2).toUpperCase()}</div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h6 class="mb-1 text-truncate">${d.name}</h6>
+                                        <p class="text-muted small mb-0">
+                                            <span class="availability-dot ${d.is_available ? 'available' : 'unavailable'}"></span>
+                                            ${d.blood_group} · ${d.location}
+                                        </p>
+                                    </div>
+                                    <a href="/donor/donor/${d.id}" class="btn btn-sm btn-outline-custom">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>`).join('');
+
+                    container.innerHTML = `
+                        <div class="col-12 d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Found <strong>${donors.length}</strong> matching donors</span>
+                            <button class="btn btn-sm btn-link text-decoration-none" onclick="resetSearch()">Reset</button>
+                        </div>
+                        ${donorCards}`;
+                }
+            })
+            .catch(err => {
+                console.error('Search error:', err);
+                showToast('Failed to fetch donors. Please try again.', 'danger');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+            });
+    }
+
+    function resetSearch() {
+        document.getElementById('searchBG').value = '';
+        document.getElementById('searchLoc').value = '';
+        document.getElementById('searchAvail').value = '';
+        const container = document.getElementById('searchResults');
+        container.innerHTML = '';
+        container.classList.add('d-none');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+{% block auth_content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card-custom p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width:70px;height:70px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:50%;">
+                        <i class="bi bi-person-plus" style="font-size:32px;color:white;"></i>
+                    </div>
+                    <h3 class="mb-1">Create Account</h3>
+                    <p class="text-secondary">Join BloodLife and start saving lives</p>
+                </div>
+
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            {{ form.name(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            {{ form.email(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Password <small class="text-muted">(min 8
+                                    chars)</small></label>
+                            {{ form.password(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Confirm Password</label>
+                            {{ form.confirm_password(class="form-control form-control-custom", placeholder="")
+                            }}
+                            {% for e in form.confirm_password.errors %}<div class="text-danger small">{{ e }}</div>{%
+                            endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phone</label>
+                            {{ form.phone(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.phone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Date of Birth</label>
+                            {{ form.dob(class="form-control form-control-custom") }}
+                            {% for e in form.dob.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Gender</label>
+                            {{ form.gender(class="form-select form-control-custom") }}
+                            {% for e in form.gender.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Blood Group</label>
+                            {{ form.blood_group(class="form-select form-control-custom") }}
+                            {% for e in form.blood_group.errors %}<div class="text-danger small">{{ e }}</div>{% endfor
+                            %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Location <small class="text-muted">(City,
+                                    State)</small></label>
+                            {{ form.location(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.location.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Weight (kg)</label>
+                            {{ form.weight(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.weight.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Height (cm)</label>
+                            {{ form.height(class="form-control form-control-custom", placeholder="") }}
+                            {% for e in form.height.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3 mb-3">
+                                {{ form.blood_willing(class="form-check-input fs-5") }}
+                                <div>
+                                    <label class="form-check-label fw-semibold" for="blood_willing">
+                                        <i class="bi bi-droplet-fill me-1 text-danger"></i> I am willing to donate blood
+                                    </label>
+                                    <p class="text-muted small mb-0">Be listed as an active blood donor in our search
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-3 bg-light rounded-3 d-flex align-items-center gap-3">
+                                {{ form.platelet_willing(class="form-check-input fs-5") }}
+                                <div>
+                                    <label class="form-check-label fw-semibold" for="platelet_willing">
+                                        <i class="bi bi-droplet me-1 text-info"></i> I am willing to donate platelets
+                                    </label>
+                                    <p class="text-muted small mb-0">Register as a platelet donor (separate eligibility
+                                        applies)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 mt-4">
+                        <i class="bi bi-person-check me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p>Already have an account? <a href="{{ url_for('auth.login') }}"
+                            class="text-primary fw-semibold">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

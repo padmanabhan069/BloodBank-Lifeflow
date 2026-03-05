@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Check Eligibility{% endblock %}
+{% block auth_content %}
+<div class="container py-5">
+    <div class="eligibility-card">
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center mb-3"
+                style="width:80px;height:80px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:50%;">
+                <i class="bi bi-heart-pulse" style="font-size:40px;color:white;"></i>
+            </div>
+            <h2 class="mb-1">Blood Donation Eligibility</h2>
+            <p class="text-secondary">Answer all questions honestly to check your eligibility</p>
+        </div>
+
+        {% if result == 'pass' %}
+        <div class="text-center py-4" id="successScreen">
+            <div class="mb-4" style="display:inline-flex;align-items:center;justify-content:center;">
+                <svg viewBox="0 0 80 80" width="100" height="100" style="overflow:visible;">
+                    <circle cx="40" cy="40" r="36" fill="rgba(16,185,129,0.12)" stroke="#10B981" stroke-width="4"
+                        class="success-ring" />
+                    <polyline points="22,42 35,55 58,28" fill="none" stroke="#10B981" stroke-width="5"
+                        stroke-linecap="round" stroke-linejoin="round" class="success-check" />
+                </svg>
+            </div>
+            <h3 class="fw-bold mb-2" style="color:#10B981;">You Are Eligible! 🎉</h3>
+            <p class="text-muted mb-4">Congratulations! You have passed all the eligibility checks.<br>Redirecting you
+                to the registration page…</p>
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
+                <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                <span class="text-muted small">Redirecting in <strong id="countdown">3</strong> seconds…</span>
+            </div>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary-custom">
+                <i class="bi bi-arrow-right-circle me-2"></i>Continue to Register Now
+            </a>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const circle = document.querySelector('.success-ring');
+                const check = document.querySelector('.success-check');
+                const circleLen = 2 * Math.PI * 36;
+                const checkLen = check.getTotalLength();
+                circle.style.strokeDasharray = circleLen;
+                circle.style.strokeDashoffset = circleLen;
+                check.style.strokeDasharray = checkLen;
+                check.style.strokeDashoffset = checkLen;
+                circle.style.transition = 'stroke-dashoffset 0.6s ease';
+                check.style.transition = 'stroke-dashoffset 0.4s ease 0.5s';
+                requestAnimationFrame(() => {
+                    circle.style.strokeDashoffset = 0;
+                    setTimeout(() => { check.style.strokeDashoffset = 0; }, 500);
+                });
+                let seconds = 3;
+                const cd = document.getElementById('countdown');
+                const timer = setInterval(() => {
+                    seconds--;
+                    cd.textContent = seconds;
+                    if (seconds <= 0) {
+                        clearInterval(timer);
+                        window.location.href = "{{ url_for('auth.register') }}";
+                    }
+                }, 1000);
+            });
+        </script>
+        {% elif result == 'fail' %}
+        <div class="text-center py-4">
+            <div class="d-inline-flex align-items-center justify-content-center mb-4"
+                style="width:80px;height:80px;background:rgba(239,68,68,.1);border-radius:50%;">
+                <i class="bi bi-x-circle" style="font-size:40px;color:var(--danger);"></i>
+            </div>
+            <h4 class="text-danger mb-3">Not Eligible at This Time</h4>
+            <p class="text-muted mb-4">{{ reason }}</p>
+            <a href="{{ url_for('auth.eligibility') }}" class="btn btn-outline-custom">
+                <i class="bi bi-arrow-counterclockwise me-2"></i>Try Again
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary-custom ms-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Login Instead
+            </a>
+        </div>
+        {% else %}
+        <div class="progress-custom mb-4">
+            <div class="progress-bar" id="eligibilityProgress" style="width:10%"></div>
+        </div>
+
+        <form method="POST" id="eligibilityForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            {% set steps = [
+            ('age', 'bi-calendar-check', 'Are you between <strong>18–65 years</strong> of age?'),
+            ('weight', 'bi-speedometer', 'Is your weight <strong>45 kg or above</strong>?'),
+            ('health', 'bi-clipboard2-pulse', 'Are you currently <strong>healthy with no illness</strong> ?'),
+            ('medication', 'bi-capsule', 'Are you currently <strong>NOT on any restricted medication</strong>?'),
+            ('sleep', 'bi-moon-stars', 'Did you sleep <strong>at least 6 hours</strong> daily?'),
+            ('alcohol', 'bi-cup-straw', 'Can you<strong>AVOID consumption of alcohol</strong> for donattion purpose ?'),
+            ('tattoo', 'bi-x-circle', 'Have you <strong>NOT had a tattoo or piercing</strong> in the last 6 months?'),
+            ('surgery', 'bi-hospital', 'Have you <strong>NOT had any surgery or dental procedure</strong> in the last 6
+            months?'),
+            ('infectious', 'bi-shield-exclamation', 'Have you <strong>NOT had any infectious disease</strong>
+            recently?'),
+            ('heart', 'bi-heart', 'Do you <strong>NOT have any serious heart or blood disorder</strong>?')
+            ] %}
+
+            {% for name, icon, question in steps %}
+            <div class="eligibility-step {% if loop.first %}active{% endif %}" data-step="{{ loop.index }}">
+                <div class="eligibility-question">
+                    <h5 class="mb-3">
+                        <i class="bi {{ icon }} me-2 text-primary"></i>{{ question|safe }}
+                    </h5>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="{{ name }}" id="{{ name }}Yes"
+                                value="yes" required data-auto-step="{{ loop.index }}" onclick="handleAutoNext(this)">
+                            <label class="form-check-label fw-semibold" for="{{ name }}Yes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="{{ name }}" id="{{ name }}No" value="no"
+                                data-auto-step="{{ loop.index }}" onclick="handleAutoNext(this)">
+                            <label class="form-check-label fw-semibold" for="{{ name }}No">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    {% if not loop.first %}
+                    <button type="button" class="btn btn-outline-custom" data-step-index="{{ loop.index }}"
+                        onclick="handlePrevStep(this)">Back</button>
+                    {% endif %}
+                    {% if loop.last %}
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1">
+                        <i class="bi bi-check-circle me-2"></i>Check Eligibility
+                    </button>
+                    {% else %}
+                    <button type="button" class="btn btn-primary-custom flex-grow-1" data-step-index="{{ loop.index }}"
+                        onclick="handleNextStep(this)">
+                        Continue <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">Already registered? <a href="{{ url_for('auth.login') }}"
+                    class="text-primary fw-semibold">Sign In</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const totalSteps = 10;
+    let currentStep = 1;
+    function updateProgress() {
+        document.getElementById('eligibilityProgress').style.width = (currentStep / totalSteps * 100) + '%';
+    }
+    function autoNext(step) {
+        if (step < totalSteps) {
+            setTimeout(() => nextStep(step), 250);
+        }
+    }
+    function handleAutoNext(input) {
+        if (input.value === 'no') {
+            document.getElementById('eligibilityForm').submit();
+        } else {
+            autoNext(parseInt(input.getAttribute('data-auto-step')));
+        }
+    }
+    function handleNextStep(btn) {
+        nextStep(parseInt(btn.getAttribute('data-step-index')));
+    }
+    function handlePrevStep(btn) {
+        prevStep(parseInt(btn.getAttribute('data-step-index')));
+    }
+    function nextStep(step) {
+        const steps = ['age', 'weight', 'health', 'medication', 'sleep', 'alcohol', 'tattoo', 'surgery', 'infectious', 'heart'];
+        const sel = document.querySelector(`input[name="${steps[step - 1]}"]:checked`);
+        if (!sel) { showToast('Please answer this question', 'warning'); return; }
+
+        if (sel.value === 'no') {
+            document.getElementById('eligibilityForm').submit();
+            return;
+        }
+
+        document.querySelector(`.eligibility-step[data-step="${step}"]`).classList.remove('active');
+        document.querySelector(`.eligibility-step[data-step="${step + 1}"]`).classList.add('active');
+        currentStep = step + 1; updateProgress();
+    }
+    function prevStep(step) {
+        document.querySelector(`.eligibility-step[data-step="${step}"]`).classList.remove('active');
+        document.querySelector(`.eligibility-step[data-step="${step - 1}"]`).classList.add('active');
+        currentStep = step - 1; updateProgress();
+    }
+</script>
+{% endblock %}
