@@ -91,12 +91,33 @@
             </div>
             {% endif %}
 
+            <div class="eligibility-terms mb-4 p-3 border rounded" style="background-color: var(--bg-main);">
+                <h6 class="text-primary mb-3 fw-bold"><i class="bi bi-shield-check me-2"></i>Donation Eligibility Criteria</h6>
+                <ul class="small text-muted ps-3 mb-3" style="line-height: 1.6;">
+                    <li>The donor must be between 18 and 65 years of age.</li>
+                    <li>The donor must have a minimum body weight of 45–50 kilograms.</li>
+                    <li>The donor is advised to consume light food and adequate fluids before donating blood.</li>
+                    <li>The donor’s body temperature should be normal, with no signs of fever.</li>
+                    <li>The donor must be in good physical health and free from any active infection or illness.</li>
+                    <li>The donor should not have donated blood within the previous 3 months for men and 4 months for women.</li>
+                    <li>The donor must avoid alcohol consumption for at least 24 hours prior to donation.</li>
+                    <li>Individuals with a recent tattoo, body piercing, surgery, or vaccination should postpone blood donation according to medical guidelines.</li>
+                    <li>The donor must truthfully provide medical history and follow the instructions of healthcare staff.</li>
+                </ul>
+                <div class="form-check mt-2 border-top pt-3">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" onchange="document.getElementById('acceptBtn').disabled = !this.checked;">
+                    <label class="form-check-label fw-bold text-dark" for="agreeTerms">
+                        I confirm that I meet all the above eligibility criteria and agree to the terms and conditions.
+                    </label>
+                </div>
+            </div>
+
             <div class="row g-2">
                 <div class="col-sm-6">
                     <form method="POST" action="{{ url_for('requests.respond', req_id=req.id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="action" value="accept">
-                        <button type="submit" class="btn btn-success w-100 py-3 shadow-sm">
+                        <button type="submit" class="btn btn-success w-100 py-3 shadow-sm" id="acceptBtn" disabled>
                             <i class="bi bi-check-circle me-2"></i>Yes, I'm Available
                         </button>
                     </form>

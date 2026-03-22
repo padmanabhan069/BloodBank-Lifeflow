@@ -11,7 +11,7 @@ from app.models import User, DonorProfile, BloodRequest, BloodStock, Notificatio
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    return redirect(url_for('auth.eligibility'))
+    return redirect(url_for('auth.login'))
 
 
 @main.route('/dashboard')
@@ -40,6 +40,10 @@ def dashboard():
               .order_by(DonorProfile.blood_rank_score.desc())
               .limit(9).all())
 
+    # Show eligibility modal only once — right after a new account is created
+    from flask import session as flask_session
+    show_eligibility_modal = flask_session.pop('show_eligibility_modal', False)
+
     return render_template('donor/dashboard.html',
                            profile=profile,
                            total_donors=total_donors,
@@ -48,4 +52,5 @@ def dashboard():
                            my_donations=my_donations,
                            stock=stock,
                            bg_counts=bg_counts,
-                           donors=donors)
+                           donors=donors,
+                           show_eligibility_modal=show_eligibility_modal)

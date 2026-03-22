@@ -12,8 +12,7 @@ from app.utils import calculate_bmi, send_reset_email
 
 @auth.route('/eligibility', methods=['GET', 'POST'])
 def eligibility():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
+    # Removed redirect to dashboard to allow logged in users to access the check if needed
     if request.method == 'POST':
         answers = {
             'q_age':        request.form.get('age') == 'yes',
@@ -47,15 +46,25 @@ def eligibility():
                 fail_reason = fail_reasons[key]
                 break
 
-        check = EligibilityCheck(**answers, is_eligible=all_passed, fail_reason=fail_reason,
-                                 session_id=session.get('_id', ''))
+        if current_user.is_authenticated:
+            check = EligibilityCheck(**answers, is_eligible=all_passed, fail_reason=fail_reason,
+                                     user_id=current_user.id, session_id=session.get('_id', ''))
+        else:
+            check = EligibilityCheck(**answers, is_eligible=all_passed, fail_reason=fail_reason,
+                                     session_id=session.get('_id', ''))
         db.session.add(check)
         db.session.commit()
 
         if all_passed:
             session['eligible'] = True
+            if current_user.is_authenticated:
+                flash('Congratulations! You passed the eligibility check.', 'success')
+                return redirect(url_for('main.dashboard'))
             return render_template('auth/eligibility.html', result='pass')
         else:
+            if current_user.is_authenticated:
+                flash(f'Eligibility check failed: {fail_reason}', 'warning')
+                return redirect(url_for('main.dashboard'))
             return render_template('auth/eligibility.html', result='fail', reason=fail_reason)
     return render_template('auth/eligibility.html')
 
@@ -64,9 +73,6 @@ def eligibility():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-    if not session.get('eligible'):
-        flash('Please complete the eligibility check first.', 'warning')
-        return redirect(url_for('auth.eligibility'))
 
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -96,8 +102,8 @@ def register():
         from app.utils import send_in_app_notification
         send_in_app_notification(user.id, 'Welcome to BloodLife! 🎉',
                                  'Thank you for registering. Your first donation could save 3 lives!')
-        session.pop('eligible', None)
         login_user(user)
+        session['show_eligibility_modal'] = True   # show eligibility modal once for new users
         flash('Account created! Welcome to BloodLife.', 'success')
         return redirect(url_for('main.dashboard'))
 

@@ -48,6 +48,25 @@ def manage_users():
     return render_template('admin/users.html', users=users)
 
 
+@admin.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.is_admin:
+        return jsonify({'success': False, 'message': 'Cannot delete an admin account.'}), 400
+    if user.id == current_user.id:
+        return jsonify({'success': False, 'message': 'You cannot delete your own account.'}), 400
+
+    # Manually remove RequestResponse rows where this user is a donor
+    # (no cascade defined from User → RequestResponse on the donor side)
+    RequestResponse.query.filter_by(donor_id=user.id).delete()
+
+    db.session.delete(user)   # cascades handle profile, history, notifications, etc.
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'Account for "{user.name}" has been permanently deleted.'})
+
+
 @admin.route('/users/<int:user_id>/toggle-block', methods=['POST'])
 @login_required
 @admin_required

@@ -6,7 +6,7 @@ from wtforms import (StringField, PasswordField, BooleanField, SelectField,
                      TextAreaField, FloatField, IntegerField, DateField,
                      TimeField, TelField, SubmitField)
 from wtforms.validators import (DataRequired, Email, EqualTo, Length, Optional,
-                                NumberRange, ValidationError)
+                                NumberRange, ValidationError, Regexp)
 from app.models import User, BLOOD_GROUPS
 
 
@@ -30,7 +30,10 @@ class RegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(), EqualTo('password')])
-    phone = TelField('Phone', validators=[DataRequired(), Length(7, 20)])
+    phone = TelField('Phone', validators=[
+        DataRequired(), 
+        Regexp(r'^\d{10}$', message="Phone number must be exactly 10 digits (e.g. 9876543210)")
+    ])
     dob = DateField('Date of Birth', validators=[DataRequired()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[DataRequired()])
     blood_group = SelectField('Blood Group', choices=BLOOD_GROUP_CHOICES,
@@ -63,7 +66,10 @@ class ResetPasswordForm(FlaskForm):
 
 class ProfileUpdateForm(FlaskForm):
     name = StringField('Full Name', validators=[DataRequired(), Length(2, 100)])
-    phone = TelField('Phone', validators=[Optional(), Length(max=20)])
+    phone = TelField('Phone', validators=[
+        Optional(), 
+        Regexp(r'^\d{10}$', message="Phone number must be exactly 10 digits")
+    ])
     dob = DateField('Date of Birth', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
     location = StringField('Location', validators=[Optional(), Length(max=200)])
@@ -84,7 +90,10 @@ class BloodRequestForm(FlaskForm):
     location = StringField('Hospital Location', validators=[DataRequired(), Length(max=300)])
     need_date = DateField('Date Required', validators=[DataRequired()])
     need_time = StringField('Time Required', validators=[Optional()])
-    contact = TelField('Contact Number', validators=[DataRequired(), Length(max=20)])
+    contact = TelField('Contact Number', validators=[
+        DataRequired(), 
+        Regexp(r'^\d{10}$', message="Contact number must be exactly 10 digits")
+    ])
     notes = TextAreaField('Additional Notes', validators=[Optional(), Length(max=1000)])
     is_urgent = BooleanField('Mark as Critical Emergency')
     submit = SubmitField('Submit Request')

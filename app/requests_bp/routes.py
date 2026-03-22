@@ -30,28 +30,24 @@ def index():
         db.session.add(req)
         db.session.flush()
 
-        # Notify all active donors (as requested: "alert all the donors through notification")
+        # Notify only donors whose blood group is compatible with the requested blood group
+        compatible_groups = get_compatible_blood_groups(req.blood_group)
         matching = (DonorProfile.query.join(User)
                     .filter(DonorProfile.is_available == True,
+                            DonorProfile.blood_group.in_(compatible_groups),
                             DonorProfile.user_id != current_user.id,
                             User.is_blocked == False).all())
 
         notified = 0
         for p in matching:
-            # We notify everyone who is active, regardless of blood group compatibility
-            # but we can add a note if they are compatible
-            is_compatible = req.blood_group in get_compatible_blood_groups(p.blood_group)
-            comp_msg = " (Matching blood group!)" if is_compatible else ""
-            
             send_in_app_notification(
                 p.user_id,
                 f'🚨 {"URGENT " if req.is_urgent else ""}Blood Request — {req.blood_group}',
-                f'{req.blood_group} blood needed at {req.hospital} on {req.need_date}. Are you available?{comp_msg}',
+                f'{req.blood_group} blood needed at {req.hospital} on {req.need_date}. '
+                f'Your blood group ({p.blood_group}) is compatible. Are you available?',
                 notif_type='request', related_id=req.id
             )
-            # Also try to send email if configured and compatible
-            if is_compatible:
-                send_request_notification_email(p.user, req)
+            send_request_notification_email(p.user, req)
             notified += 1
         
         # Confirmation for the requester

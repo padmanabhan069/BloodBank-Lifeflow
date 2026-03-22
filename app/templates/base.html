@@ -192,6 +192,34 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- ═══ MOBILE BOTTOM NAV ════════════════════════════════════════════ -->
+    <nav class="mobile-bottom-nav d-md-none">
+        <a href="{{ url_for('main.dashboard') }}" class="mobile-nav-item {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('donor.directory') }}" class="mobile-nav-item {% if 'directory' in request.endpoint|default('') %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Donors</span>
+        </a>
+        <a href="{{ url_for('requests.index') }}" class="mobile-nav-item mobile-nav-center shadow-lg">
+            <div class="center-btn">
+                <i class="bi bi-droplet-fill text-white"></i>
+            </div>
+        </a>
+        <a href="{{ url_for('requests.notifications') }}" class="mobile-nav-item position-relative {% if 'notifications' in request.endpoint|default('') %}active{% endif %}">
+            <i class="bi bi-bell-fill"></i>
+            <span>Alerts</span>
+            {% if unread|default(0) > 0 %}
+            <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem; transform: translateX(5px) !important;">{{ unread }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('donor.profile') }}" class="mobile-nav-item {% if 'profile' in request.endpoint|default('') %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
     <!-- ═══ NOTIFICATION DRAWER ══════════════════════════════════════════ -->
     <div class="notif-backdrop" id="notifBackdrop" onclick="closeNotifDrawer()"></div>
     <aside class="notif-drawer" id="notifDrawer">

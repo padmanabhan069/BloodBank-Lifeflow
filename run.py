@@ -1,7 +1,6 @@
-"""
-Entry point for BloodLife Donor Management System
-Run: python run.py
-"""
+from dotenv import load_dotenv
+load_dotenv()
+
 from app import create_app, db
 from app.models import User, DonorProfile, BloodRequest, DonationHistory
 from app.models import PlateletDonation, Notification, EligibilityCheck

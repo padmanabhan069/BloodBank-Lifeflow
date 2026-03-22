@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .header {
+            background-color: #C41E3A;
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #C41E3A;
+            color: white !important;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .highlight {
+            color: #C41E3A;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to LifeFlow!</h1>
+    </div>
+    <div class="content">
+        <p>Dear <span class="highlight">{{ name }}</span>,</p>
+        <p>Thank you for registering as a donor with LifeFlow Blood Donor System. Your commitment to saving lives is truly commendable.</p>
+        
+        <p>We've recorded your blood group as <span class="highlight">{{ blood_group }}</span>. Our team and those in need will be able to reach out to you when there's a requirement matching your profile.</p>
+
+        <p>You can now log in to your dashboard to complete your profile, track your donation history, and get your digital donor ID.</p>
+
+        <a href="{{ url_for('auth.login', _external=True) }}" class="btn">Login to Dashboard</a>
+
+        <p>Together, let's make a difference!</p>
+        
+        <p>Best regards,<br>The LifeFlow Team</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2026 LifeFlow Blood Donor System. All rights reserved.</p>
+        <p>If you did not register for this account, please ignore this email.</p>
+    </div>
+</body>
+</html>

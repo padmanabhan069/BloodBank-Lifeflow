@@ -139,8 +139,11 @@ def send_reset_email(user, reset_url: str):
         ''')
     try:
         mail.send(msg)
+        print(f"DEBUG: Email sent successfully to {user.email}")
     except Exception as e:
-        current_app.logger.warning(f'Email send failed: {e}')
+        current_app.logger.error(f'Critical: Email send failed: {e}')
+        # Log to console for development convenience
+        print(f"\n{'='*60}\nEMAIL SEND FAILED! \nTO: {user.email}\nERROR: {e}\nRESET URL: {reset_url}\n{'='*60}\n")
 
 
 def send_request_notification_email(donor, request):

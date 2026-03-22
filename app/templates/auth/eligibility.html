@@ -24,13 +24,13 @@
             </div>
             <h3 class="fw-bold mb-2" style="color:#10B981;">You Are Eligible! 🎉</h3>
             <p class="text-muted mb-4">Congratulations! You have passed all the eligibility checks.<br>Redirecting you
-                to the registration page…</p>
+                to your dashboard…</p>
             <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
                 <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
                 <span class="text-muted small">Redirecting in <strong id="countdown">3</strong> seconds…</span>
             </div>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary-custom">
-                <i class="bi bi-arrow-right-circle me-2"></i>Continue to Register Now
+            <a href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('auth.register') }}" class="btn btn-primary-custom">
+                <i class="bi bi-arrow-right-circle me-2"></i>Continue to Dashboard
             </a>
         </div>
         <script>
@@ -56,7 +56,7 @@
                     cd.textContent = seconds;
                     if (seconds <= 0) {
                         clearInterval(timer);
-                        window.location.href = "{{ url_for('auth.register') }}";
+                        window.location.href = "{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('auth.register') }}";
                     }
                 }, 1000);
             });
@@ -72,9 +72,15 @@
             <a href="{{ url_for('auth.eligibility') }}" class="btn btn-outline-custom">
                 <i class="bi bi-arrow-counterclockwise me-2"></i>Try Again
             </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary-custom ms-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Go to Dashboard
+            </a>
+            {% else %}
             <a href="{{ url_for('auth.login') }}" class="btn btn-primary-custom ms-2">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Login Instead
             </a>
+            {% endif %}
         </div>
         {% else %}
         <div class="progress-custom mb-4">
@@ -101,11 +107,11 @@
 
             {% for name, icon, question in steps %}
             <div class="eligibility-step {% if loop.first %}active{% endif %}" data-step="{{ loop.index }}">
-                <div class="eligibility-question">
+                <div class="eligibility-question mx-auto text-center" style="max-width: 500px;">
                     <h5 class="mb-3">
-                        <i class="bi {{ icon }} me-2 text-primary"></i>{{ question|safe }}
+                        <i class="bi {{ icon }} mb-2 text-primary fs-3 d-block"></i>{{ question|safe }}
                     </h5>
-                    <div class="d-flex gap-4">
+                    <div class="d-flex justify-content-center gap-4">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="{{ name }}" id="{{ name }}Yes"
                                 value="yes" required data-auto-step="{{ loop.index }}" onclick="handleAutoNext(this)">
@@ -138,10 +144,12 @@
             {% endfor %}
         </form>
 
+        {% if not current_user.is_authenticated %}
         <div class="text-center mt-4">
             <p class="text-muted">Already registered? <a href="{{ url_for('auth.login') }}"
                     class="text-primary fw-semibold">Sign In</a></p>
         </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>
