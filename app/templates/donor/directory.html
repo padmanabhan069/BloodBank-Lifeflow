@@ -35,65 +35,80 @@
     </form>
 </div>
 
-<div class="row g-4">
-    {% for p in donors.items %}
-    <div class="col-md-6 col-lg-4 animate-fade-in">
-        <div class="donor-card">
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="donor-avatar">{{ p.user.name[:2].upper() }}</div>
-                <div class="flex-grow-1 min-w-0">
-                    <h6 class="mb-0 text-truncate">{{ p.user.name }}</h6>
-                    <p class="text-muted small mb-0">{{ p.city or p.location }}</p>
-                </div>
-                <span class="badge {{ 'bg-success' if p.is_blood_eligible else 'bg-secondary' }}">
-                    {% if p.is_blood_eligible %}
-                    Available
-                    {% elif p.blood_days_until_eligible > 0 %}
-                    {{ p.blood_days_until_eligible }} days left
-                    {% else %}
-                    Unavailable
-                    {% endif %}
-                </span>
-            </div>
-            <div class="row g-2 mb-3 text-center">
-                <div class="col-4">
-                    <div class="p-2 bg-light rounded">
-                        <small class="text-muted d-block">Blood</small>
-                        <strong class="text-primary">{{ p.blood_group }}</strong>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="p-2 bg-light rounded">
-                        <small class="text-muted d-block">BMI</small>
-                        <strong>{{ p.bmi or '—' }}</strong>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="p-2 bg-light rounded">
-                        <small class="text-muted d-block">Donations</small>
-                        <strong>{{ p.total_blood_donations }}</strong>
-                    </div>
-                </div>
-            </div>
-            {% if p.blood_days_until_eligible > 0 %}
-            <p class="text-muted small mb-2">
-                <i class="bi bi-clock me-1"></i>Eligible in {{ p.blood_days_until_eligible }} days
-            </p>
-            {% endif %}
-            {% if p.is_platelet_donor %}
-            <p class="text-info small mb-2"><i class="bi bi-droplet me-1"></i>Platelet donor</p>
-            {% endif %}
-            <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}" class="btn btn-primary-custom btn-sm w-100">
-                View Profile
-            </a>
-        </div>
+<div class="card-custom border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-custom align-middle mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" class="text-center">Gender</th>
+                    <th scope="col">Blood Group</th>
+                    <th scope="col">Last Checking</th>
+                    <th scope="col" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in donors.items %}
+                <tr>
+                    <td>
+                        <div class="fw-bold" style="color: var(--text-primary);">{{ p.user.name }}</div>
+                        <small style="color: var(--text-muted);"><i class="bi bi-geo-alt me-1"></i>{{ p.city or p.location or 'Unknown' }}</small>
+                    </td>
+                    <td>
+                        {% if p.is_blood_eligible %}
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-medium border border-success border-opacity-25" style="font-size: 0.8rem; min-width: 90px; text-align: center;">Eligible</span>
+                        {% elif p.blood_days_until_eligible > 0 %}
+                            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2 fw-medium border border-warning border-opacity-25" style="font-size: 0.8rem; min-width: 90px; text-align: center;">{{ p.blood_days_until_eligible }} days left</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-medium border border-danger border-opacity-25" style="font-size: 0.8rem; min-width: 90px; text-align: center;">Not Eligible</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% set p_gender = p.gender|default('U', true) %}
+                        {% set gender_initial = p_gender[:1]|upper %}
+                        {% if gender_initial == 'M' %}
+                            <span class="d-inline-flex justify-content-center align-items-center rounded bg-primary bg-opacity-10 text-primary fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">M</span>
+                        {% elif gender_initial == 'F' %}
+                            <span class="d-inline-flex justify-content-center align-items-center rounded bg-danger bg-opacity-10 text-danger fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">F</span>
+                        {% else %}
+                            <span class="d-inline-flex justify-content-center align-items-center rounded bg-secondary bg-opacity-10 text-secondary fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">{{ gender_initial }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold" style="color: var(--text-primary);">{{ p.blood_group or '—' }}</span>
+                    </td>
+                    <td>
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">
+                            {% if p.last_blood_donation %}
+                                {{ p.last_blood_donation.strftime('%d %b, %Y') }}
+                            {% else %}
+                                {{ p.updated_at.strftime('%d %b, %Y') if p.updated_at else 'N/A' }}
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex gap-2 justify-content-center align-items-center">
+                            <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}" class="btn btn-sm text-white rounded px-3 py-1 fw-medium" style="background-color: var(--danger); border-color: var(--danger); font-size: 0.85rem;">
+                                View Details
+                            </a>
+                            <button class="btn btn-sm rounded px-2 py-1" style="background-color: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border);">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5" style="background-color: var(--bg-card); border-bottom: none;">
+                        <i class="bi bi-people" style="font-size:60px; color: var(--border);"></i>
+                        <p class="text-muted mt-3 fw-medium">No donors found matching your criteria.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% else %}
-    <div class="col-12 text-center py-5">
-        <i class="bi bi-people" style="font-size:60px;color:var(--border);"></i>
-        <p class="text-muted mt-3">No donors found matching your criteria.</p>
-    </div>
-    {% endfor %}
 </div>
 
 {% if donors.pages > 1 %}

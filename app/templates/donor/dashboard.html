@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block page_title %}Home{% endblock %}
-{% block page_subtitle %}Welcome back, {{ current_user.name.split()[0] }}! Ready to save lives today.{% endblock %}
+{% block page_subtitle %}Welcome back, {{ current_user.name.split()[0] }}!{% endblock %}
 
 {% block content %}
 <!-- Hero Banner -->
@@ -13,7 +13,7 @@
                 <i class="bi bi-heart-pulse-fill me-1"></i> BloodLife
             </div>
             <h2 class="hero-title">Every Drop Saves a Life</h2>
-            <p class="hero-subtitle">You are part of a community of heroes. Your donation can save up to 3 lives.</p>
+            <p class="hero-subtitle">One chance to save a life-Donate Blood!</p>
             <div class="d-flex gap-3 flex-wrap">
                 <a href="{{ url_for('requests.index') }}" class="btn hero-btn-primary">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Emergency Request
@@ -35,50 +35,81 @@
     </div>
 </div>
 
-<!-- Stats Row -->
+<!-- Quick Actions (moved up) -->
+<div class="row g-3 mb-4 animate-fade-in stagger-1">
+    <div class="col-md-6">
+        <a href="{{ url_for('requests.index') }}" class="text-decoration-none">
+            <div class="quick-action-card quick-action-emergency">
+                <div class="quick-action-icon-wrap">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="quick-action-body">
+                    <h6 class="quick-action-title">Request Blood</h6>
+                    <p class="quick-action-sub">Emergency blood request to notify matching donors</p>
+                </div>
+                <i class="bi bi-arrow-right quick-action-arrow"></i>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6">
+        <a href="{{ url_for('donor.platelet') }}" class="text-decoration-none">
+            <div class="quick-action-card quick-action-platelet">
+                <div class="quick-action-icon-wrap">
+                    <i class="bi bi-droplet-fill"></i>
+                </div>
+                <div class="quick-action-body">
+                    <h6 class="quick-action-title">Platelet Donation</h6>
+                    <p class="quick-action-sub">View platelet donors and register your willingness</p>
+                </div>
+                <i class="bi bi-arrow-right quick-action-arrow"></i>
+            </div>
+        </a>
+    </div>
+</div>
 
-<div class="row g-4 mb-4">
-    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-1">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
+<!-- Stats Row (compact) -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3 animate-fade-in stagger-2">
+        <div class="stat-card stat-card-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-sm"><i class="bi bi-people-fill"></i></div>
                 <div>
-                    <p class="text-muted mb-1 small">Total Donors</p>
-                    <p class="stat-value animate-num">{{ total_donors }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;">Total Donors</p>
+                    <p class="stat-value-sm animate-num">{{ total_donors }}</p>
                 </div>
-                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-2">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
+    <div class="col-6 col-lg-3 animate-fade-in stagger-3">
+        <div class="stat-card stat-card-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-sm" style="background:rgba(16,185,129,.12);color:#10B981;"><i class="bi bi-check-circle-fill"></i></div>
                 <div>
-                    <p class="text-muted mb-1 small">Available Now</p>
-                    <p class="stat-value text-success">{{ available_donors }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;">Available</p>
+                    <p class="stat-value-sm text-success">{{ available_donors }}</p>
                 </div>
-                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-3">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
+    <div class="col-6 col-lg-3 animate-fade-in stagger-4">
+        <div class="stat-card stat-card-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-sm" style="background:rgba(239,68,68,.12);color:#EF4444;"><i class="bi bi-exclamation-circle-fill"></i></div>
                 <div>
-                    <p class="text-muted mb-1 small">Active Requests</p>
-                    <p class="stat-value text-danger">{{ active_requests }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;">Active</p>
+                    <p class="stat-value-sm text-danger">{{ active_requests }}</p>
                 </div>
-                <div class="stat-icon"><i class="bi bi-exclamation-circle-fill"></i></div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3 animate-fade-in stagger-4">
-        <div class="stat-card">
-            <div class="d-flex align-items-center justify-content-between">
+    <div class="col-6 col-lg-3 animate-fade-in stagger-5">
+        <div class="stat-card stat-card-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon stat-icon-sm"><i class="bi bi-heart-fill"></i></div>
                 <div>
-                    <p class="text-muted mb-1 small">My Donations</p>
-                    <p class="stat-value">{{ my_donations }}</p>
+                    <p class="text-muted mb-0" style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;">My Donations</p>
+                    <p class="stat-value-sm">{{ my_donations }}</p>
                 </div>
-                <div class="stat-icon"><i class="bi bi-heart-fill"></i></div>
             </div>
         </div>
     </div>
@@ -133,27 +164,8 @@
 </div>
 
 <div class="row g-4">
-    <!-- Blood Group Inventory -->
-    <div class="col-lg-5 animate-fade-in stagger-4">
-        <div class="card-custom p-4">
-            <h5 class="mb-4"><i class="bi bi-droplet-half me-2 text-primary"></i>Blood Group Inventory</h5>
-            <div class="row g-3">
-                {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
-                <div class="col-6 col-md-3">
-                    <div class="blood-group-card">
-                        <div class="blood-type">{{ bg }}</div>
-                        <p class="text-muted small mb-1">{{ stock.get(bg,0)|int }} units</p>
-                        <p class="small mb-0"><span class="text-success fw-semibold">{{ bg_counts.get(bg,0) }}</span>
-                            donors</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Available Donors -->
-    <div class="col-lg-7 animate-fade-in stagger-5">
+    <!-- Available Donors (Now on Left) -->
+    <div class="col-lg-7 animate-fade-in stagger-4">
         <div class="card-custom p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>Available Donors</h5>
@@ -184,31 +196,28 @@
             </div>
         </div>
     </div>
+
+    <!-- Blood Group Inventory (Now on Right) -->
+    <div class="col-lg-5 animate-fade-in stagger-5">
+        <div class="card-custom p-4">
+            <h5 class="mb-4"><i class="bi bi-droplet-half me-2 text-primary"></i>Blood Group Inventory</h5>
+            <div class="row g-3">
+                {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                <div class="col-6">
+                    <div class="blood-group-card">
+                        <div class="blood-type">{{ bg }}</div>
+                        <p class="text-muted small mb-1">{{ stock.get(bg,0)|int }} units</p>
+                        <p class="small mb-0"><span class="text-success fw-semibold">{{ bg_counts.get(bg,0) }}</span>
+                            donors</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="row g-4 mt-2">
-    <div class="col-md-6">
-        <a href="{{ url_for('requests.index') }}" class="text-decoration-none">
-            <div class="card-custom p-4 text-center"
-                style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;cursor:pointer;">
-                <i class="bi bi-exclamation-triangle-fill" style="font-size:48px;"></i>
-                <h5 class="mt-3 mb-0">Request Blood (Emergency)</h5>
-                <p class="opacity-75 small mt-2 mb-0">Submit an emergency blood request to notify matching donors</p>
-            </div>
-        </a>
-    </div>
-    <div class="col-md-6">
-        <a href="{{ url_for('donor.platelet') }}" class="text-decoration-none">
-            <div class="card-custom p-4 text-center"
-                style="background:linear-gradient(135deg,var(--accent),var(--primary));color:white;cursor:pointer;">
-                <i class="bi bi-droplet-fill" style="font-size:48px;"></i>
-                <h5 class="mt-3 mb-0">Platelet Donation</h5>
-                <p class="opacity-75 small mt-2 mb-0">View platelet donors and register your willingness</p>
-            </div>
-        </a>
-    </div>
-</div>
+<!-- (Quick Actions moved to top of page) -->
 
 <!-- ── Floating Eligibility Info Button ────────────────────────────────── -->
 <button class="eligibility-info-btn" data-bs-toggle="offcanvas" data-bs-target="#criteriaOffcanvas"

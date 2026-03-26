@@ -233,6 +233,135 @@ body {
     color: var(--primary);
 }
 
+/* ── Compact stat card ───────────────────────────────────────── */
+.stat-card-sm {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .04);
+    transition: transform .2s, box-shadow .2s;
+}
+
+.stat-card-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(196, 30, 58, .09);
+}
+
+.stat-value-sm {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.stat-icon-sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+/* ── Quick Action Cards ──────────────────────────────────────── */
+.quick-action-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    color: white;
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background .2s;
+}
+
+.quick-action-card:hover::before {
+    background: rgba(255,255,255,0.08);
+}
+
+.quick-action-card:hover {
+    transform: translateY(-3px);
+}
+
+.quick-action-emergency {
+    background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+    box-shadow: 0 6px 24px rgba(196,30,58,.35);
+}
+
+.quick-action-emergency:hover {
+    box-shadow: 0 10px 32px rgba(196,30,58,.50);
+}
+
+.quick-action-platelet {
+    background: linear-gradient(135deg, #FF6B6B 0%, #C41E3A 100%);
+    box-shadow: 0 6px 24px rgba(255,107,107,.30);
+}
+
+.quick-action-platelet:hover {
+    box-shadow: 0 10px 32px rgba(255,107,107,.45);
+}
+
+.quick-action-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,.25);
+}
+
+.quick-action-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.quick-action-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 3px;
+}
+
+.quick-action-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.quick-action-arrow {
+    font-size: 20px;
+    color: rgba(255,255,255,.6);
+    flex-shrink: 0;
+    transition: transform .2s ease, color .2s ease;
+}
+
+.quick-action-card:hover .quick-action-arrow {
+    transform: translateX(4px);
+    color: white;
+}
+
 /* ── Donor cards ─────────────────────────────────────────────── */
 .donor-card {
     background: white;
@@ -421,6 +550,7 @@ body {
 .table-custom {
     border-collapse: separate;
     border-spacing: 0;
+    background-color: transparent !important;
 }
 
 .table-custom th {
@@ -438,6 +568,8 @@ body {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    background-color: transparent !important;
+    color: var(--text-primary);
 }
 
 .table-custom tbody tr:hover {
@@ -445,8 +577,21 @@ body {
     transition: background .15s;
 }
 
+/* Dark mode table fixes to prevent white background leakage */
+[data-theme='dark'] .table-custom {
+    --bs-table-bg: transparent !important;
+    background-color: transparent !important;
+}
+
+[data-theme='dark'] .table-custom td,
+[data-theme='dark'] .table-custom th {
+    border-bottom-color: var(--border) !important;
+    background-color: transparent !important;
+    color: var(--text-primary);
+}
+
 .table-custom tbody tr:last-child td {
-    border-bottom: none;
+    border-bottom: none !important;
 }
 
 /* ── Ranking ─────────────────────────────────────────────────── */
