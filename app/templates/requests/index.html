@@ -11,6 +11,17 @@
             <form method="POST" novalidate>
                 {{ form.hidden_tag() }}
                 <div class="row g-3">
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-semibold">Request Type</label>
+                        <div class="d-flex gap-3">
+                            {% for value, label in form.request_type.choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="request_type" id="type_{{ value }}" value="{{ value }}" {{ 'checked' if value == form.request_type.data }}>
+                                <label class="form-check-label" for="type_{{ value }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Blood Group Required</label>
                         {{ form.blood_group(class="form-select form-control-custom") }}
@@ -75,7 +86,8 @@
             <div class="card-custom p-3 mb-3 {{ 'border-danger' if req.is_urgent }}">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                        <span class="badge bg-primary me-1">{{ req.blood_group }}</span>
+                        <span class="badge {{ 'bg-info' if req.request_type == 'platelet' else 'bg-primary' }} me-1">{{ req.request_type|capitalize }}</span>
+                        <span class="badge bg-secondary me-1">{{ req.blood_group }}</span>
                         {% if req.is_urgent %}<span class="badge bg-danger">🚨 URGENT</span>{% endif %}
                     </div>
                     <small class="text-muted">{{ req.units }} unit(s)</small>

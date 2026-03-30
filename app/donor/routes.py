@@ -8,7 +8,7 @@ import io
 
 from app.donor import donor
 from app import db
-from app.models import User, DonorProfile, DonationHistory, PlateletDonation, Notification
+from app.models import User, DonorProfile, BloodRequest, DonationHistory, PlateletDonation, Notification
 from app.forms import ProfileUpdateForm, DonationRecordForm
 from app.utils import calculate_bmi, generate_qr_code, generate_donor_pdf
 

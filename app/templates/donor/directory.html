@@ -36,7 +36,7 @@
 </div>
 
 <div class="card-custom border-0 shadow-sm rounded-3 overflow-hidden">
-    <div class="table-responsive">
+    <div class="table-responsive d-none d-md-block">
         <table class="table table-custom align-middle mb-0">
             <thead>
                 <tr>
@@ -92,9 +92,6 @@
                             <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}" class="btn btn-sm text-white rounded px-3 py-1 fw-medium" style="background-color: var(--danger); border-color: var(--danger); font-size: 0.85rem;">
                                 View Details
                             </a>
-                            <button class="btn btn-sm rounded px-2 py-1" style="background-color: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border);">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
                         </div>
                     </td>
                 </tr>
@@ -108,6 +105,55 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Mobile View -->
+    <div class="d-md-none">
+        {% for p in donors.items %}
+        <a href="{{ url_for('donor.view_donor', donor_id=p.id) }}" class="mobile-donor-item">
+            <div class="mobile-donor-header">
+                <div>
+                    <h6 class="mobile-donor-name">{{ p.user.name }}</h6>
+                    <small style="color: var(--text-muted);"><i class="bi bi-geo-alt me-1"></i>{{ p.city or p.location or 'Unknown' }}</small>
+                </div>
+                <span class="mobile-donor-blood-badge">{{ p.blood_group or '—' }}</span>
+            </div>
+            
+            <div class="mobile-donor-meta">
+                <span>
+                    {% if p.is_blood_eligible %}
+                        <span class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i>Eligible</span>
+                    {% elif p.blood_days_until_eligible > 0 %}
+                        <span class="text-warning fw-medium"><i class="bi bi-clock-history me-1"></i>{{ p.blood_days_until_eligible }}d</span>
+                    {% else %}
+                        <span class="text-danger fw-medium"><i class="bi bi-x-circle-fill me-1"></i>Not Eligible</span>
+                    {% endif %}
+                </span>
+                <span>
+                    <i class="bi bi-calendar3 me-1"></i> 
+                    {% if p.last_blood_donation %}
+                        {{ p.last_blood_donation.strftime('%d %b') }}
+                    {% else %}
+                        {{ p.updated_at.strftime('%d %b') if p.updated_at else 'N/A' }}
+                    {% endif %}
+                </span>
+                <span>
+                    {% set gender_initial = p.gender[:1]|upper if p.gender else 'U' %}
+                    <i class="bi bi-person me-1"></i>{{ gender_initial }}
+                </span>
+            </div>
+            
+            <div class="mobile-donor-footer">
+                <span class="text-primary small fw-semibold">View Profile</span>
+                <i class="bi bi-chevron-right text-muted"></i>
+            </div>
+        </a>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people" style="font-size:40px; color: var(--border);"></i>
+            <p class="text-muted mt-3 fw-medium small">No donors found matching your criteria.</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
 

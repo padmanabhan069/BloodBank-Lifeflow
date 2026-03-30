@@ -1,5 +1,5 @@
 FAILED: Email could not be sent. Error Type: SMTPAuthenticationError
-Error Message: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-2aeae34de5asm33751135ad.55 - gsmtp')
+Error Message: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-82c7d385e27sm3043584b3a.36 - gsmtp')
 Traceback (most recent call last):
   File "C:\Users\S Padmanabhan\project\debug_mail.py", line 28, in <module>
     mail.send(msg)
@@ -24,4 +24,4 @@ Traceback (most recent call last):
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "C:\Users\S Padmanabhan\AppData\Local\Programs\Python\Python314\Lib\smtplib.py", line 669, in auth
     raise SMTPAuthenticationError(code, resp)
-smtplib.SMTPAuthenticationError: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d9443c01a7336-2aeae34de5asm33751135ad.55 - gsmtp')
+smtplib.SMTPAuthenticationError: (535, b'5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d2e1a72fcca58-82c7d385e27sm3043584b3a.36 - gsmtp')

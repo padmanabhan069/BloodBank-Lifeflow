@@ -148,8 +148,13 @@ def forgot_password():
         if user:
             token = user.get_reset_token()
             reset_url = url_for('auth.reset_password', token=token, _external=True)
-            send_reset_email(user, reset_url)
-        flash('If that email exists, a reset link has been sent.', 'info')
+            if send_reset_email(user, reset_url):
+                flash('A reset link has been sent to your email.', 'info')
+            else:
+                flash('Failed to send reset email. Please check your credentials or try again later.', 'danger')
+        else:
+            # Still flash info to prevent user enumeration
+            flash('If that email exists, a reset link has been sent.', 'info')
         return redirect(url_for('auth.login'))
     return render_template('auth/forgot_password.html', form=form)
 

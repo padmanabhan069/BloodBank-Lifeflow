@@ -140,22 +140,26 @@ def send_reset_email(user, reset_url: str):
     try:
         mail.send(msg)
         print(f"DEBUG: Email sent successfully to {user.email}")
+        return True
     except Exception as e:
         current_app.logger.error(f'Critical: Email send failed: {e}')
         # Log to console for development convenience
         print(f"\n{'='*60}\nEMAIL SEND FAILED! \nTO: {user.email}\nERROR: {e}\nRESET URL: {reset_url}\n{'='*60}\n")
+        return False
 
 
 def send_request_notification_email(donor, request):
     from app import mail
+    label = "Platelet" if request.request_type == 'platelet' else "Blood"
     msg = Message(
-        subject=f'BloodLife — Urgent {request.blood_group} Blood Needed',
+        subject=f'BloodLife — Urgent {request.blood_group} {label} Needed',
         recipients=[donor.email],
         html=f'''
-        <h2 style="color:#C41E3A;">Emergency Blood Request</h2>
+        <h2 style="color:#C41E3A;">Emergency {label} Request</h2>
         <p>Hi {donor.name},</p>
-        <p>An emergency request matching your blood group has been submitted.</p>
+        <p>An emergency request matching your donor profile has been submitted.</p>
         <table>
+            <tr><td><b>Request Type:</b></td><td>{label}</td></tr>
             <tr><td><b>Blood Group:</b></td><td>{request.blood_group}</td></tr>
             <tr><td><b>Hospital:</b></td><td>{request.hospital}</td></tr>
             <tr><td><b>Location:</b></td><td>{request.location}</td></tr>

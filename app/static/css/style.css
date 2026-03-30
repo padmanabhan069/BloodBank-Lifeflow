@@ -801,6 +801,90 @@ body {
     }
 }
 
+/* ── Mobile Donor Directory List ──────────────────────────────── */
+.mobile-donor-list {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .mobile-donor-item {
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        padding: 16px;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.2s;
+    }
+
+    .mobile-donor-item:last-child {
+        border-bottom: none;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .mobile-donor-item:first-child {
+        border-radius: 16px 16px 0 0;
+    }
+
+    .mobile-donor-item:active, .mobile-donor-item:hover {
+        background-color: var(--primary-light);
+        color: inherit;
+    }
+
+    .mobile-donor-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .mobile-donor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .mobile-donor-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .mobile-donor-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .mobile-donor-meta > span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .mobile-donor-blood-badge {
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .mobile-donor-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border);
+    }
+}
+
 /* ── Floating Eligibility Info Button ───────────────────────── */
 .eligibility-info-btn {
     position: fixed;

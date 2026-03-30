@@ -82,6 +82,8 @@ class ProfileUpdateForm(FlaskForm):
 # ─── Blood Request Form ───────────────────────────────────────────────────────
 
 class BloodRequestForm(FlaskForm):
+    request_type = SelectField('Request Type', choices=[('blood', 'Whole Blood'), ('platelet', 'Platelet')],
+                               default='blood', validators=[DataRequired()])
     blood_group = SelectField('Blood Group Required', choices=BLOOD_GROUP_CHOICES,
                               validators=[DataRequired()])
     units = IntegerField('Units Required', validators=[DataRequired(),

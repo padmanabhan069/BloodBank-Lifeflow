@@ -32,12 +32,11 @@ def dashboard():
     for bg in BLOOD_GROUPS:
         bg_counts[bg] = DonorProfile.query.filter_by(blood_group=bg, is_available=True).count()
 
-    # Available donors (exclude self)
+    # Recent donors (new registrations)
     donors = (DonorProfile.query
               .join(User)
-              .filter(DonorProfile.is_available == True,
-                      User.is_blocked == False)
-              .order_by(DonorProfile.blood_rank_score.desc())
+              .filter(User.is_blocked == False)
+              .order_by(DonorProfile.updated_at.desc())
               .limit(9).all())
 
     # Show eligibility modal only once — right after a new account is created

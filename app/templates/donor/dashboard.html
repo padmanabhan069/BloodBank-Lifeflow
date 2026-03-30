@@ -10,10 +10,10 @@
     <div class="hero-overlay">
         <div class="hero-content">
             <div class="hero-badge mb-2">
-                <i class="bi bi-heart-pulse-fill me-1"></i> BloodLife
+                <i class="bi bi-heart-pulse-fill me-1"></i> <strong>ജീവരേഖ</strong>
             </div>
             <h2 class="hero-title">Every Drop Saves a Life</h2>
-            <p class="hero-subtitle">One chance to save a life-Donate Blood!</p>
+            <p class="hero-subtitle">Donate Blood-One chance to save a life!</p>
             <div class="d-flex gap-3 flex-wrap">
                 <a href="{{ url_for('requests.index') }}" class="btn hero-btn-primary">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Emergency Request
@@ -168,7 +168,7 @@
     <div class="col-lg-7 animate-fade-in stagger-4">
         <div class="card-custom p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>Available Donors</h5>
+                <h5 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>Recently Joined Donors</h5>
                 <a href="{{ url_for('donor.directory') }}" class="btn btn-outline-custom btn-sm">View All</a>
             </div>
             <div class="row g-3" id="donorsList">

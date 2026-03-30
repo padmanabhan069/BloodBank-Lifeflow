@@ -25,36 +25,44 @@ def index():
             need_time=form.need_time.data,
             contact=form.contact.data,
             notes=form.notes.data,
-            is_urgent=form.is_urgent.data
+            is_urgent=form.is_urgent.data,
+            request_type=form.request_type.data
         )
         db.session.add(req)
         db.session.flush()
 
-        # Notify only donors whose blood group is compatible with the requested blood group
+        # Notify only compatible donors
         compatible_groups = get_compatible_blood_groups(req.blood_group)
-        matching = (DonorProfile.query.join(User)
-                    .filter(DonorProfile.is_available == True,
-                            DonorProfile.blood_group.in_(compatible_groups),
-                            DonorProfile.user_id != current_user.id,
-                            User.is_blocked == False).all())
+        query = (DonorProfile.query.join(User)
+                 .filter(DonorProfile.is_available == True,
+                         DonorProfile.blood_group.in_(compatible_groups),
+                         DonorProfile.user_id != current_user.id,
+                         User.is_blocked == False))
+        
+        if req.request_type == 'platelet':
+            query = query.filter(DonorProfile.is_platelet_donor == True)
+        
+        matching = query.all()
 
         notified = 0
         for p in matching:
+            label = "Platelet" if req.request_type == 'platelet' else "Blood"
             send_in_app_notification(
                 p.user_id,
-                f'🚨 {"URGENT " if req.is_urgent else ""}Blood Request — {req.blood_group}',
-                f'{req.blood_group} blood needed at {req.hospital} on {req.need_date}. '
-                f'Your blood group ({p.blood_group}) is compatible. Are you available?',
+                f'🚨 {"URGENT " if req.is_urgent else ""}{label} Request — {req.blood_group}',
+                f'{req.blood_group} {label.lower()} needed at {req.hospital} on {req.need_date}. '
+                f'Your group ({p.blood_group}) is compatible. Are you available?',
                 notif_type='request', related_id=req.id
             )
             send_request_notification_email(p.user, req)
             notified += 1
         
         # Confirmation for the requester
+        label = "Platelet" if req.request_type == 'platelet' else "Blood"
         send_in_app_notification(
             current_user.id,
-            '✅ Blood Request Submitted',
-            f'Your request for {req.blood_group} blood at {req.hospital} has been posted. {notified} donor(s) alerted.',
+            f'✅ {label} Request Submitted',
+            f'Your request for {req.blood_group} {label.lower()} at {req.hospital} has been posted. {notified} donor(s) alerted.',
             notif_type='info', related_id=req.id
         )
 
@@ -112,9 +120,10 @@ def respond(req_id):
         admins = User.query.filter_by(role='admin').all()
         for admin in admins:
             if admin.id != current_user.id:
+                label = "Platelet" if req.request_type == 'platelet' else "Blood"
                 send_in_app_notification(
                     admin.id,
-                    '📢 Donor Available for Blood Request',
+                    f'📢 Donor Available for {label} Request',
                     f'Donor {current_user.name} ({current_user.email}) is available for {req.blood_group} request at {req.hospital}. Phone: {p.phone if p else "N/A"}',
                     notif_type='alert', related_id=req_id
                 )
